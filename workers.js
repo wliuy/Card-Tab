@@ -1,1808 +1,1897 @@
 const HTML_CONTENT = `
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Card Tab</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2280%22>⭐</text></svg>">
     <style>
-    /* 全局样式 */
-    body {
-        font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-        margin: 0;
-        padding: 0;
-        background-color: #f8f6f2; /* 米白色背景 */
-        color: #222; /* 深灰字体 */
-        transition: all 0.3s ease;
-    }
-
-    /* 暗色模式样式 */
-    body.dark-theme {
-        background-color: #121418; /* 更深的背景色 */
-        color: #e3e3e3;
-    }
-
-    /* 固定元素样式 */
-    .fixed-elements {
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        background-color: #f8f6f2; /* 与整体背景一致 */
-        z-index: 1000;
-        padding: 10px;
-        transition: all 0.3s ease;
-        height: 150px;
-        box-shadow: none; /* 移除阴影 */
-    }
-
-    body.dark-theme .fixed-elements {
-        background-color: #121418; /* 与暗色主题背景完全一致 */
-        box-shadow: none; /* 移除阴影 */
-    }
-
-    /* 分类快捷按钮容器样式移至搜索栏内 */
-
-    .category-button {
-        padding: 5px 10px;
-        border-radius: 15px;
-        background-color: #f9fafb;
-        color: #43b883;
-        border: none;
-        cursor: pointer;
-        font-size: 12px;
-        font-weight: 500;
-        transition: all 0.2s ease;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
-        flex: 0 0 auto;
-        white-space: nowrap;
-        margin: 0 2px;
-        position: relative;
-        overflow: hidden;
-    }
-
-    body.dark-theme .category-button {
-        background-color: #2a2e38;
-        color: #5d7fb9;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-    }
-
-    .category-button:hover {
-        background-color: #43b883;
-        color: white;
-        transform: translateY(-1px);
-        box-shadow: 0 3px 5px rgba(0, 0, 0, 0.12);
-    }
-
-    /* 分类按钮选中效果 */
-    .category-button.active {
-        background-color: #43b883;
-        color: white;
-        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.12);
-        transform: translateY(-1px);
-        font-weight: 600;
-        border-bottom: 2px solid #35a674;
-    }
-
-    body.dark-theme .category-button:hover,
-    body.dark-theme .category-button.active {
-        background-color: #5d7fb9;
-        color: white;
-    }
-
-    /* 分类按钮悬停样式 */
-
-    .fixed-elements h3 {
-        position: absolute;
-        top: 10px;
-        left: 20px;
-        margin: 0;
-        font-size: 22px;
-        font-weight: 600;
-        color: #222;
-        transition: all 0.3s ease;
-    }
-
-    body.dark-theme .fixed-elements h3 {
-        color: #e3e3e3;
-    }
-
-    /* 一言模块样式 */
-    #hitokoto {
-        margin: 5px 0 15px;
-        font-size: 14px;
-        color: #888;
-        font-style: italic;
-        max-width: 600px;
-        margin-left: auto;
-        margin-right: auto;
-        transition: all 0.3s ease;
-    }
-
-    #hitokoto a {
-        color: #43b883;
-        text-decoration: none;
-        transition: all 0.3s ease;
-    }
-
-    #hitokoto a:hover {
-        color: #35a674;
-    }
-
-    body.dark-theme #hitokoto {
-        color: #a0a0a0;
-    }
-
-    body.dark-theme #hitokoto a {
-        color: #5d7fb9;
-    }
-
-    /* 中心内容样式 */
-    .center-content {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        width: 100%;
-        max-width: none; /* 不限制最大宽度，使分类按钮有更多空间 */
-        text-align: center;
-        padding: 0 10px; /* 添加左右内边距 */
-    }
-
-    /* 右上角控制区域样式 */
-    .top-right-controls {
-        position: fixed;
-        top: 10px;
-        right: 10px;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        z-index: 1001;
-    }
-
-    /* 设置按钮样式 */
-    .admin-btn {
-        background-color: #43b883;
-        color: white;
-        border: none;
-        border-radius: 4px;
-        padding: 8px 16px;
-        font-size: 13px;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        font-weight: 500;
-    }
-
-    .admin-btn:hover {
-        background-color: #35a674;
-        transform: translateY(-1px);
-    }
-
-    body.dark-theme .admin-btn {
-        background-color: #5d7fb9;
-    }
-
-    body.dark-theme .admin-btn:hover {
-        background-color: #4a6fa5;
-    }
-
-    /* 登录按钮样式 */
-    .login-btn {
-        background-color: #43b883;
-        color: white;
-        border: none;
-        border-radius: 4px;
-        padding: 8px 16px;
-        font-size: 13px;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        font-weight: 500;
-    }
-
-    .login-btn:hover {
-        background-color: #35a674;
-        transform: translateY(-1px);
-    }
-
-    body.dark-theme .login-btn {
-        background-color: #5d7fb9;
-    }
-
-    body.dark-theme .login-btn:hover {
-        background-color: #4a6fa5;
-    }
-
-    /* GitHub图标按钮样式 */
-    .github-btn {
-        background: none;
-        border: none;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 36px;
-        height: 36px;
-        border-radius: 4px;
-        padding: 0;
-    }
-
-    .github-btn:hover {
-        transform: translateY(-2px);
-    }
-
-    .github-btn svg {
-        width: 24px;
-        height: 24px;
-        fill: #43b883;
-        transition: fill 0.3s ease;
-    }
-
-    body.dark-theme .github-btn svg {
-        fill: #5d7fb9;
-    }
-
-    /* 书签搜索图标按钮样式 */
-    .bookmark-search-toggle {
-        background-color: #43b883;
-        color: white;
-        border: none;
-        border-radius: 4px;
-        padding: 0;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 36px;
-        height: 36px;
-        position: relative;
-    }
-
-    .bookmark-search-toggle:hover {
-        background-color: #35a674;
-        transform: translateY(-2px);
-    }
-
-    .bookmark-search-toggle svg {
-        width: 20px;
-        height: 20px;
-        stroke: white;
-    }
-
-    body.dark-theme .bookmark-search-toggle {
-        background-color: #5d7fb9;
-    }
-
-    body.dark-theme .bookmark-search-toggle:hover {
-        background-color: #4a6fa5;
-    }
-
-    /* 下拉书签搜索框样式 */
-    .bookmark-search-dropdown {
-        position: absolute;
-        top: 100%;
-        right: 0;
-        width: 140px;
-        background-color: white;
-        border: 1px solid #e0e0e0;
-        border-radius: 4px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-        padding: 8px;
-        margin-top: 4px;
-        display: none;
-        z-index: 1002;
-    }
-
-    .bookmark-search-dropdown.show {
-        display: block;
-    }
-
-    .bookmark-search-dropdown input {
-        width: 100%;
-        border: 1px solid #e0e0e0;
-        border-radius: 4px;
-        padding: 8px 12px;
-        font-size: 13px;
-        transition: all 0.3s ease;
-        box-sizing: border-box;
-    }
-
-    .bookmark-search-dropdown input:focus {
-        border-color: #43b883;
-        box-shadow: 0 0 0 2px rgba(67, 184, 131, 0.2);
-        outline: none;
-    }
-
-    .bookmark-search-dropdown input::placeholder {
-        color: #999;
-    }
-
-    body.dark-theme .bookmark-search-dropdown {
-        background-color: #323642;
-        border-color: #444;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-    }
-
-    body.dark-theme .bookmark-search-dropdown input {
-        background-color: #252830;
-        color: #e3e3e3;
-        border-color: #444;
-    }
-
-    body.dark-theme .bookmark-search-dropdown input::placeholder {
-        color: #888;
-    }
-
-    /* 登录弹窗样式 */
-    .login-modal {
-        display: none;
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0, 0, 0, 0.6);
-        justify-content: center;
-        align-items: center;
-        z-index: 2000;
-        backdrop-filter: blur(3px);
-    }
-
-    .login-modal-content {
-        background-color: white;
-        padding: 25px;
-        border-radius: 10px;
-        width: 300px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
-        animation: modalFadeIn 0.3s ease;
-    }
-
-    @keyframes modalFadeIn {
-        from { opacity: 0; transform: translateY(-20px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
-
-    .login-modal h3 {
-        margin: 0 0 20px 0;
-        color: #333;
-        text-align: center;
-        font-size: 18px;
-    }
-
-    .login-modal input {
-        width: 100%;
-        margin-bottom: 15px;
-        padding: 10px;
-        border: 1px solid #e0e0e0;
-        border-radius: 5px;
-        font-size: 14px;
-        transition: all 0.3s ease;
-        box-sizing: border-box;
-    }
-
-    .login-modal input:focus {
-        border-color: #43b883;
-        box-shadow: 0 0 0 2px rgba(67, 184, 131, 0.2);
-        outline: none;
-    }
-
-    .login-modal-buttons {
-        display: flex;
-        gap: 10px;
-        justify-content: flex-end;
-    }
-
-    .login-modal button {
-        background-color: #43b883;
-        color: white;
-        border: none;
-        padding: 10px 15px;
-        border-radius: 5px;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        font-size: 13px;
-    }
-
-    .login-modal button:hover {
-        background-color: #35a674;
-    }
-
-    .login-modal button.cancel {
-        background-color: #f0f0f0;
-        color: #333;
-    }
-
-    .login-modal button.cancel:hover {
-        background-color: #e0e0e0;
-    }
-
-    body.dark-theme .login-modal-content {
-        background-color: #252830;
-        color: #e3e3e3;
-    }
-
-    body.dark-theme .login-modal h3 {
-        color: #e3e3e3;
-    }
-
-    body.dark-theme .login-modal input {
-        background-color: #323642;
-        color: #e3e3e3;
-        border-color: #444;
-    }
-
-    /* 悬浮提示样式 */
-    @media (hover: hover) and (pointer: fine) {
-        .has-tooltip {
-            position: relative;
+        /* 全局样式 */
+        body {
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f6f2;
+            color: #222;
+            transition: all 0.3s ease;
         }
 
-        .has-tooltip::after {
-            content: attr(data-tooltip);
-            position: absolute;
-            background: rgba(0, 0, 0, 0.75);
-            color: white;
-            padding: 6px 10px;
-            border-radius: 4px;
-            font-size: 12px;
-            pointer-events: none;
-            opacity: 0;
-            transition: opacity 0.3s;
-            white-space: nowrap;
-            z-index: 1000;
+        /* 暗色模式样式 */
+        body.dark-theme {
+            background-color: #121418;
+            color: #e3e3e3;
         }
 
-        .has-tooltip::before {
-            content: "";
-            position: absolute;
-            border: 6px solid transparent;
-            opacity: 0;
-            transition: opacity 0.3s;
-            z-index: 1000;
-        }
-
-        .has-tooltip:hover::after,
-        .has-tooltip:hover::before {
-            opacity: 1;
-        }
-
-        /* 下方提示框和箭头 */
-        .tooltip-bottom::after {
-            top: 100%;
-            left: 50%;
-            margin-top: 12px;
-            transform: translateX(-50%);
-        }
-        .tooltip-bottom::before {
-            top: 100%;
-            left: 50%;
-            transform: translateX(-50%);
-            border-bottom-color: rgba(0, 0, 0, 0.75);
-        }
-
-        /* 绿底样式 */
-        .tooltip-green::after {
-            background: #43b883;
-            color: white;
-        }
-        .tooltip-green::before {
-            border-bottom-color: #43b883;
-        }
-
-        /* 暗色主题 */
-        body.dark-theme .has-tooltip::after {
-            background: rgba(151, 151, 151, 0.9);
-            color: #eee;
-        }
-        body.dark-theme .has-tooltip::before {
-            border-bottom-color: rgba(151, 151, 151, 0.9);
-        }
-        body.dark-theme .tooltip-green::after {
-            background: #5d7fb9;
-            color: white;
-        }
-        body.dark-theme .tooltip-green::before {
-            border-bottom-color: #5d7fb9;
-        }
-    }
-
-    /* 搜索结果样式 - 简化版 */
-    .search-results-section {
-        margin-bottom: 30px;
-    }
-
-    .search-results-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 20px;
-        padding: 15px;
-        background-color: #f8f9fa;
-        border-radius: 8px;
-        border-left: 4px solid #43b883;
-    }
-
-    body.dark-theme .search-results-header {
-        background-color: #2d3748;
-        border-left-color: #5d7fb9;
-    }
-
-    .search-results-title {
-        font-size: 18px;
-        font-weight: bold;
-        color: #333;
-    }
-
-    body.dark-theme .search-results-title {
-        color: #e2e8f0;
-    }
-
-    .back-to-main {
-        background-color: #43b883;
-        color: white;
-        border: none;
-        border-radius: 4px;
-        padding: 8px 16px;
-        cursor: pointer;
-        font-size: 14px;
-        transition: all 0.3s ease;
-    }
-
-    .back-to-main:hover {
-        background-color: #35a674;
-    }
-
-    body.dark-theme .back-to-main {
-        background-color: #5d7fb9;
-    }
-
-    body.dark-theme .back-to-main:hover {
-        background-color: #4a6fa5;
-    }
-
-    .no-search-results {
-        text-align: center;
-        padding: 30px;
-        color: #888;
-        font-size: 16px;
-    }
-
-    body.dark-theme .no-search-results {
-        color: #a0a0a0;
-    }
-
-    /* 管理控制按钮样式 - 严格按照佬友修改版设计 */
-    .add-remove-controls {
-        display: none;
-        flex-direction: column;
-        position: fixed;
-        right: 20px;
-        top: 50%;
-        transform: translateY(-50%);
-        align-items: center;
-        gap: 15px;
-        z-index: 900;
-    }
-
-    .round-btn {
-        background-color: #43b883;
-        color: white;
-        border: none;
-        border-radius: 50%;
-        width: 40px;
-        height: 40px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 22px;
-        cursor: pointer;
-        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
-        transition: all 0.3s ease;
-        position: relative;
-    }
-
-    .round-btn svg {
-        pointer-events: none;
-        display: block;
-        margin: auto;
-    }
-
-    .round-btn:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-    }
-
-    body.dark-theme .round-btn {
-        background-color: #5d7fb9;
-    }
-
-    .add-btn { order: 1; }
-    .remove-btn { order: 2; }
-    .category-btn { order: 3; }
-    .remove-category-btn { order: 4; }
-
-    /* 主要内容区域样式 */
-    .content {
-        margin-top: 170px;
-        padding: 10px;
-        max-width: 1600px;
-        margin-left: auto;
-        margin-right: auto;
-        transition: opacity 0.3s ease;
-    }
-
-    .loading .content {
-        opacity: 0.6;
-    }
-
-    /* 搜索栏样式 */
-    .search-container {
-        margin-top: 10px;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        width: 100%;
-    }
-
-    .search-bar {
-        display: flex;
-        justify-content: center;
-        margin-bottom: 10px;
-        width: 100%;
-        max-width: 600px;
-        margin-left: auto;
-        margin-right: auto;
-        border-radius: 8px;
-        overflow: hidden;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-        border: 1px solid #e0e0e0;
-        transition: all 0.3s ease;
-    }
-
-    .search-bar:focus-within {
-        box-shadow: 0 3px 12px rgba(0, 0, 0, 0.1);
-        border-color: #43b883;
-    }
-
-    .search-bar select {
-        border: none;
-        background-color: #f4f7fa;
-        padding: 10px 15px;
-        font-size: 14px;
-        color: #43b883;
-        width: 120px;
-        outline: none;
-        -webkit-appearance: none;
-        -moz-appearance: none;
-        appearance: none;
-        background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="6" viewBox="0 0 12 6"><path fill="%2343b883" d="M0 0l6 6 6-6z"/></svg>');
-        background-repeat: no-repeat;
-        background-position: right 10px center;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        border-radius: 0;
-    }
-
-    /* 下拉菜单样式 */
-    select option {
-        background-color: #fff;
-        color: #333;
-        padding: 10px;
-        font-size: 14px;
-        white-space: nowrap;
-        overflow: visible;
-    }
-
-    /* 暗色主题搜索栏样式 */
-    body.dark-theme .search-bar {
-        border-color: #323642;
-        background-color: #1e2128;
-    }
-
-    body.dark-theme .search-bar select {
-        background-color: #252830;
-        color: #5d7fb9;
-        background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="6" viewBox="0 0 12 6"><path fill="%235d7fb9" d="M0 0l6 6 6-6z"/></svg>');
-    }
-
-    body.dark-theme .search-bar input {
-        background-color: #252830;
-        color: #e3e3e3;
-    }
-
-    body.dark-theme .search-bar button {
-        background-color: #5d7fb9;
-    }
-
-    body.dark-theme select option {
-        background-color: #252830;
-        color: #e3e3e3;
-        white-space: nowrap;
-        overflow: visible;
-    }
-
-    .search-bar input {
-        flex: 1;
-        border: none;
-        padding: 10px 15px;
-        font-size: 14px;
-        background-color: #fff;
-        outline: none;
-    }
-
-    .search-bar button {
-        border: none;
-        background-color: #43b883;
-        color: white;
-        padding: 0 20px;
-        cursor: pointer;
-        transition: background-color 0.3s;
-    }
-
-    .search-bar button:hover {
-        background-color: #35a674;
-    }
-
-    /* 分类按钮容器样式 - 移至固定元素区域内 */
-    .category-buttons-container {
-        display: flex;
-        flex-wrap: wrap; /* 允许按钮换行显示 */
-        justify-content: center; /* 居中排列按钮 */
-        gap: 6px;
-        padding: 8px 12px;
-        width: 100%;
-        max-width: 1200px; /* 增加容器宽度，确保能显示更多按钮 */
-        margin-left: auto;
-        margin-right: auto;
-        margin-top: 5px; /* 减少与搜索栏的距离 */
-        background-color: transparent; /* 背景透明 */
-        border-radius: 8px;
-        box-shadow: none; /* 移除阴影 */
-        transition: all 0.3s ease;
-        position: relative; /* 确保在固定元素内正确定位 */
-    }
-
-    body.dark-theme .category-buttons-container {
-        background-color: transparent; /* 暗色模式下的背景透明 */
-        box-shadow: none;
-    }
-
-    /* 滚动条美化 */
-    ::-webkit-scrollbar {
-        width: 8px;
-        height: 8px;
-    }
-
-    ::-webkit-scrollbar-track {
-        background: #f1f1f1;
-        border-radius: 4px;
-    }
-
-    ::-webkit-scrollbar-thumb {
-        background: #c1c1c1;
-        border-radius: 4px;
-    }
-
-    ::-webkit-scrollbar-thumb:hover {
-        background: #a8a8a8;
-    }
-
-    body.dark-theme::-webkit-scrollbar-track {
-        background: #252830;
-    }
-
-    body.dark-theme::-webkit-scrollbar-thumb {
-        background: #444;
-    }
-
-    body.dark-theme::-webkit-scrollbar-thumb:hover {
-        background: #555;
-    }
-
-    /* 分类按钮容器滚动条 */
-    .category-buttons-container::-webkit-scrollbar {
-        height: 4px;
-    }
-
-    /* 浮动按钮组样式 */
-    .floating-button-group {
-        position: fixed;
-        bottom: 50px;
-        right: 20px;
-        display: flex;
-        flex-direction: column;
-        gap: 15px;
-        z-index: 1000;
-    }
-
-    .floating-button-group button {
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        font-size: 20px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background-color: #43b883;
-        color: white;
-        border: none;
-        cursor: pointer;
-        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-        transition: all 0.2s ease;
-    }
-
-    .floating-button-group button:hover {
-        transform: translateY(-2px);
-        background-color: #369f6b;
-    }
-
-    #back-to-top-btn {
-        display: none;
-    }
-
-    body.dark-theme .floating-button-group button {
-        background-color: #5d7fb9;
-    }
-
-    body.dark-theme .floating-button-group button:hover {
-        background-color: #4a6fa5;
-    }
-
-    /* 主题切换按钮样式 */
-    #theme-toggle {
-        font-size: 24px;
-        line-height: 40px;
-    }
-
-    /* 对话框样式 */
-    #dialog-overlay {
-        display: none;
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0, 0, 0, 0.6);
-        justify-content: center;
-        align-items: center;
-        z-index: 2000;
-        backdrop-filter: blur(3px);
-        transition: all 0.3s ease;
-    }
-
-    #dialog-box {
-        background-color: white;
-        padding: 25px;
-        border-radius: 10px;
-        width: 350px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
-        animation: dialogFadeIn 0.3s ease;
-    }
-
-    @keyframes dialogFadeIn {
-        from { opacity: 0; transform: translateY(-20px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
-
-    #dialog-box input, #dialog-box select {
-        width: 100%;
-        margin-bottom: 15px;
-        padding: 10px;
-        border: 1px solid #e0e0e0;
-        border-radius: 5px;
-        font-size: 14px;
-        transition: all 0.3s ease;
-    }
-
-    #dialog-box input:focus, #dialog-box select:focus {
-        border-color: #43b883;
-        box-shadow: 0 0 0 2px rgba(67, 184, 131, 0.2);
-        outline: none;
-    }
-
-    #dialog-box label {
-        display: block;
-        margin-bottom: 5px;
-        font-weight: 500;
-        color: #222;
-    }
-
-    #dialog-box button {
-        background-color: #43b883;
-        color: white;
-        border: none;
-        padding: 10px 15px;
-        border-radius: 5px;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        margin-right: 10px;
-    }
-
-    #dialog-box button:hover {
-        background-color: #35a674;
-    }
-
-    #dialog-box button.cancel {
-        background-color: #f0f0f0;
-        color: #333;
-    }
-
-    #dialog-box button.cancel:hover {
-        background-color: #e0e0e0;
-    }
-
-    body.dark-theme #dialog-box {
-        background-color: #252830;
-        color: #e3e3e3;
-    }
-
-    body.dark-theme #dialog-box input,
-    body.dark-theme #dialog-box select {
-        background-color: #323642;
-        color: #e3e3e3;
-        border-color: #444;
-    }
-
-    body.dark-theme #dialog-box label {
-        color: #a0b7d4;
-    }
-
-    /* 分类和卡片样式 */
-    .section {
-        margin-bottom: 25px;
-        padding: 0 15px;
-    }
-
-    .section-title-container {
-        display: flex;
-        align-items: center;
-        margin-bottom: 18px;
-        border-bottom: 1px solid #e0e0e0;
-        padding-bottom: 10px;
-        transition: border-color 0.3s ease;
-        width: 100%;
-        max-width: 1520px;
-        margin-left: auto;
-        margin-right: auto;
-    }
-
-    body.dark-theme .section-title-container {
-        border-bottom-color: #2a2e38;
-    }
-
-    .section-title {
-        font-size: 22px;
-        font-weight: 600;
-        color: #222;
-        position: relative;
-        padding-left: 15px;
-        transition: color 0.3s ease;
-        min-width: 120px;
-    }
-
-    body.dark-theme .section-title {
-        color: #e3e3e3;
-    }
-
-    .section-title:before {
-        content: '';
-        position: absolute;
-        left: 0;
-        top: 50%;
-        transform: translateY(-50%);
-        width: 5px;
-        height: 22px;
-        background-color: #43b883;
-        border-radius: 2px;
-    }
-
-    .delete-category-btn {
-        background-color: #ff9800;
-        color: white;
-        border: none;
-        padding: 6px 12px;
-        border-radius: 5px;
-        cursor: pointer;
-        margin-left: 15px;
-        font-size: 13px;
-        transition: all 0.3s ease;
-        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
-    }
-
-    .delete-category-btn:hover {
-        background-color: #f57c00;
-        box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
-    }
-
-    body.dark-theme .delete-category-btn {
-        background-color: #ff9800;
-        color: #252830;
-    }
-
-    .card-container {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, 150px);
-        column-gap: 35px;
-        row-gap: 15px;
-        justify-content: start;
-        padding: 15px;
-        padding-left: 45px;
-        margin: 0 auto;
-        max-width: 1600px;
-    }
-
-    .card {
-        background-color: white;
-        border-radius: 8px;
-        padding: 12px;
-        width: 150px;
-        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.06);
-        cursor: pointer;
-        transition: all 0.3s ease;
-        position: relative;
-        user-select: none;
-        border-left: 3px solid #43b883;
-        animation: fadeIn 0.3s ease forwards;
-        animation-delay: calc(var(--card-index) * 0.05s);
-        opacity: 0;
-        margin: 2px;
-    }
-
-    body.dark-theme .card {
-        background-color: #1e2128; /* 卡片背景 */
-        border-left-color: #5d7fb9;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-    }
-
-    @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(10px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
-
-    .card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 8px 15px rgba(0, 0, 0, 0.08);
-    }
-
-    .card-top {
-        display: flex;
-        align-items: center;
-        margin-bottom: 5px;
-    }
-
-    .card-icon {
-        width: 16px;
-        height: 16px;
-        margin-right: 5px;
-    }
-
-    .card-title {
-        font-size: 15px;
-        font-weight: 600;
-        color: #222;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        transition: color 0.3s ease;
-    }
-
-    .card-url {
-        font-size: 12px;
-        color: #888;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        transition: color 0.3s ease;
-    }
-
-    body.dark-theme .card-title {
-        color: #e3e3e3;
-    }
-
-    body.dark-theme .card-url {
-        color: #a0a0a0;
-    }
-
-    .private-tag {
-        background-color: #ff9800;
-        color: white;
-        font-size: 10px;
-        padding: 2px 5px;
-        border-radius: 3px;
-        position: absolute;
-        top: 18px;
-        right: 5px;
-        z-index: 5;
-    }
-
-
-
-
-
-    /* 版权信息样式 */
-    #copyright {
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        width: 100%;
-        height: 40px;
-        background-color: rgba(255, 255, 255, 0.9);
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        font-size: 14px;
-        z-index: 1000;
-        box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.03);
-        backdrop-filter: blur(5px);
-        transition: all 0.3s ease;
-    }
-
-    #copyright p {
-        margin: 0;
-        font-weight: 500;
-        color: #666;
-    }
-
-    #copyright a {
-        color: #43b883;
-        text-decoration: none;
-        transition: all 0.3s ease;
-        position: relative;
-    }
-
-    #copyright a:after {
-        content: '';
-        position: absolute;
-        width: 100%;
-        height: 1px;
-        bottom: 0;
-        left: 0;
-        background-color: #43b883;
-        transform: scaleX(0);
-        transition: transform 0.3s ease;
-    }
-
-    #copyright a:hover:after {
-        transform: scaleX(1);
-    }
-
-    body.dark-theme #copyright {
-        background-color: rgba(37, 40, 48, 0.9);
-        color: #e3e3e3;
-    }
-
-    body.dark-theme #copyright a {
-        color: #5d7fb9;
-    }
-
-    body.dark-theme #copyright a:after {
-        background-color: #5d7fb9;
-    }
-
-    /* 响应式设计 */
-    @media (max-width: 480px) {
+        /* 固定元素样式 */
         .fixed-elements {
-            position: fixed; /* 恢复固定定位，确保分类按钮位置正确 */
-            padding: 8px 12px 5px 12px; /* 紧凑的内边距 */
-            height: auto;
-            min-height: 140px; /* 增加最小高度，确保有足够空间 */
-            box-shadow: none; /* 移除阴影 */
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background-color: #f8f6f2;
+            z-index: 1000;
+            padding: 10px;
+            transition: all 0.3s ease;
+            height: 150px;
+            box-shadow: none;
         }
 
         body.dark-theme .fixed-elements {
-            box-shadow: none; /* 移除阴影 */
-        }
-
-        /* 移动端一言样式调整 - 紧凑显示 */
-        #hitokoto {
-            margin: 3px 0 6px 0; /* 紧凑的上下边距 */
-            font-size: 12px; /* 减小字体 */
-            line-height: 1.3; /* 紧凑行高 */
-            padding: 0 8px; /* 左右内边距 */
-        }
-
-        .category-buttons-container {
-            width: 100%;
-            max-width: none;
-            padding: 6px;
-            overflow-x: auto; /* 允许水平滚动 */
-            flex-wrap: nowrap; /* 不允许按钮换行 */
-            justify-content: flex-start; /* 左对齐排列按钮 */
-            margin: 8px auto 5px; /* 紧凑的分类按钮边距 */
-            scrollbar-width: none; /* Firefox */
-            -ms-overflow-style: none; /* IE and Edge */
-            background-color: transparent; /* 移动端也透明 */
-            border-radius: 8px;
-            gap: 4px; /* 减小按钮间距 */
-        }
-
-        body.dark-theme .category-buttons-container {
-            background-color: transparent;
+            background-color: #121418;
+            box-shadow: none;
         }
 
         .category-button {
-            padding: 4px 8px;
-            font-size: 11px;
-            margin: 0 1px;
+            padding: 5px 10px;
+            border-radius: 15px;
+            background-color: #f9fafb;
+            color: #43b883;
+            border: none;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+            flex: 0 0 auto;
+            white-space: nowrap;
+            margin: 0 2px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        body.dark-theme .category-button {
+            background-color: #2a2e38;
+            color: #5d7fb9;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .category-button:hover {
+            background-color: #43b883;
+            color: white;
+            transform: translateY(-1px);
+            box-shadow: 0 3px 5px rgba(0, 0, 0, 0.12);
+        }
+
+        .category-button.active {
+            background-color: #43b883;
+            color: white;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.12);
+            transform: translateY(-1px);
+            font-weight: 600;
+            border-bottom: 2px solid #35a674;
+        }
+
+        body.dark-theme .category-button:hover,
+        body.dark-theme .category-button.active {
+            background-color: #5d7fb9;
+            color: white;
+        }
+
+        .fixed-elements h3 {
+            position: absolute;
+            top: 10px;
+            left: 20px;
+            margin: 0;
+            font-size: 22px;
+            font-weight: 600;
+            color: #43b883;
+            transition: all 0.3s ease;
+        }
+
+        body.dark-theme .fixed-elements h3 {
+            color: #5d7fb9;
+        }
+
+        #hitokoto {
+            margin: 5px 0 15px;
+            font-size: 14px;
+            color: #888;
+            font-style: italic;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            transition: all 0.3s ease;
+        }
+
+        #hitokoto a {
+            color: #43b883;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        #hitokoto a:hover {
+            color: #35a674;
+        }
+
+        body.dark-theme #hitokoto {
+            color: #a0a0a0;
+        }
+
+        body.dark-theme #hitokoto a {
+            color: #5d7fb9;
+        }
+
+        .center-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100%;
+            max-width: none;
+            text-align: center;
+            padding: 0 10px;
+        }
+
+        .top-right-controls {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            z-index: 1001;
+        }
+
+        .admin-btn {
+            background-color: #43b883;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 8px 16px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .admin-btn:hover {
+            background-color: #35a674;
+            transform: translateY(-1px);
+        }
+
+        body.dark-theme .admin-btn {
+            background-color: #5d7fb9;
+        }
+
+        body.dark-theme .admin-btn:hover {
+            background-color: #4a6fa5;
+        }
+
+        .login-btn {
+            background-color: #43b883;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 8px 16px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .login-btn:hover {
+            background-color: #35a674;
+            transform: translateY(-1px);
+        }
+
+        body.dark-theme .login-btn {
+            background-color: #5d7fb9;
+        }
+
+        body.dark-theme .login-btn:hover {
+            background-color: #4a6fa5;
+        }
+
+        .bookmark-search-toggle {
+            background-color: #43b883;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            position: relative;
+        }
+
+        .bookmark-search-toggle:hover {
+            background-color: #35a674;
+            transform: translateY(-2px);
+        }
+
+        .bookmark-search-toggle svg {
+            width: 20px;
+            height: 20px;
+            stroke: white;
+        }
+
+        body.dark-theme .bookmark-search-toggle {
+            background-color: #5d7fb9;
+        }
+
+        body.dark-theme .bookmark-search-toggle:hover {
+            background-color: #4a6fa5;
+        }
+
+        .bookmark-search-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            width: 140px;
+            background-color: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            padding: 8px;
+            margin-top: 4px;
+            display: none;
+            z-index: 1002;
+        }
+
+        .bookmark-search-dropdown.show {
+            display: block;
+        }
+
+        .bookmark-search-dropdown input {
+            width: 100%;
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+            padding: 8px 12px;
+            font-size: 13px;
+            transition: all 0.3s ease;
+            box-sizing: border-box;
+        }
+
+        .bookmark-search-dropdown input:focus {
+            border-color: #43b883;
+            box-shadow: 0 0 0 2px rgba(67, 184, 131, 0.2);
+            outline: none;
+        }
+
+        .bookmark-search-dropdown input::placeholder {
+            color: #999;
+        }
+
+        body.dark-theme .bookmark-search-dropdown {
+            background-color: #323642;
+            border-color: #444;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        body.dark-theme .bookmark-search-dropdown input {
+            background-color: #252830;
+            color: #e3e3e3;
+            border-color: #444;
+        }
+
+        body.dark-theme .bookmark-search-dropdown input::placeholder {
+            color: #888;
+        }
+
+        .login-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            backdrop-filter: blur(3px);
+        }
+
+        .login-modal-content {
+            background-color: white;
+            padding: 25px;
+            border-radius: 10px;
+            width: 300px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            animation: modalFadeIn 0.3s ease;
+        }
+
+        @keyframes modalFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .login-modal h3 {
+            margin: 0 0 20px 0;
+            color: #333;
+            text-align: center;
+            font-size: 18px;
+        }
+
+        .login-modal input {
+            width: 100%;
+            margin-bottom: 15px;
+            padding: 10px;
+            border: 1px solid #e0e0e0;
+            border-radius: 5px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            box-sizing: border-box;
+        }
+
+        .login-modal input:focus {
+            border-color: #43b883;
+            box-shadow: 0 0 0 2px rgba(67, 184, 131, 0.2);
+            outline: none;
+        }
+
+        .login-modal-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        .login-modal button {
+            background-color: #43b883;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 13px;
+        }
+
+        .login-modal button:hover {
+            background-color: #35a674;
+        }
+
+        .login-modal button.cancel {
+            background-color: #f0f0f0;
+            color: #333;
+        }
+
+        .login-modal button.cancel:hover {
+            background-color: #e0e0e0;
+        }
+
+        body.dark-theme .login-modal-content {
+            background-color: #252830;
+            color: #e3e3e3;
+        }
+
+        body.dark-theme .login-modal h3 {
+            color: #e3e3e3;
+        }
+
+        body.dark-theme .login-modal input {
+            background-color: #323642;
+            color: #e3e3e3;
+            border-color: #444;
+        }
+
+        .search-results-section {
+            margin-bottom: 30px;
+        }
+
+        .search-results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #43b883;
+        }
+
+        body.dark-theme .search-results-header {
+            background-color: #2d3748;
+            border-left-color: #5d7fb9;
+        }
+
+        .search-results-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        body.dark-theme .search-results-title {
+            color: #e2e8f0;
+        }
+
+        .back-to-main {
+            background-color: #43b883;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 8px 16px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .back-to-main:hover {
+            background-color: #35a674;
+        }
+
+        body.dark-theme .back-to-main {
+            background-color: #5d7fb9;
+        }
+
+        body.dark-theme .back-to-main:hover {
+            background-color: #4a6fa5;
+        }
+
+        .no-search-results {
+            text-align: center;
+            padding: 30px;
+            color: #888;
+            font-size: 16px;
+        }
+
+        body.dark-theme .no-search-results {
+            color: #a0a0a0;
+        }
+
+        .add-remove-controls {
+            display: none;
+            flex-direction: column;
+            position: fixed;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            align-items: center;
+            gap: 15px;
+            z-index: 900;
+        }
+
+        .round-btn {
+            background-color: #43b883;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            cursor: pointer;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .round-btn svg {
+            pointer-events: none;
+            display: block;
+            margin: auto;
+        }
+
+        .round-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        body.dark-theme .round-btn {
+            background-color: #5d7fb9;
         }
 
         .content {
-            margin-top: 150px; /* 增加顶部边距，适配更高的固定元素 */
-            margin-bottom: 100px; /* 为底部的分类按钮和版权信息留出空间 */
-            padding: 15px; /* 保持内边距 */
+            margin-top: 170px;
+            padding: 10px;
+            max-width: 1600px;
+            margin-left: auto;
+            margin-right: auto;
             transition: opacity 0.3s ease;
-        }
-
-        /* 移动端center-content布局优化 */
-        .center-content {
-            position: static; /* 移动端使用静态定位 */
-            transform: none; /* 取消变换 */
-            width: 100%;
-            text-align: center;
-            padding: 0 8px; /* 减少左右内边距 */
         }
 
         .loading .content {
             opacity: 0.6;
         }
 
-        /* 移动端搜索容器样式 */
         .search-container {
-            margin-top: 15px; /* 增加上边距，与右上角按钮拉开距离 */
+            margin-top: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
         }
 
         .search-bar {
-            flex-wrap: nowrap;
-            max-width: 320px; /* 限制移动端搜索栏宽度 */
-            width: 90%; /* 相对宽度 */
-            margin: 6px auto 8px auto; /* 居中显示 */
+            display: flex;
+            justify-content: center;
+            margin-bottom: 10px;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e0e0e0;
+            transition: all 0.3s ease;
+        }
+
+        .search-bar:focus-within {
+            box-shadow: 0 3px 12px rgba(0, 0, 0, 0.1);
+            border-color: #43b883;
         }
 
         .search-bar select {
-            width: 80px; /* 缩小选择框宽度，参考佬友修改版 */
-            flex: 0 0 auto;
-            font-size: 12px; /* 减小字体以适应更小宽度 */
+            border: none;
+            background-color: #f4f7fa;
+            padding: 8px 25px 8px 10px;
+            font-size: 13px;
+            color: #43b883;
+            max-width: 140px;
+            min-width: 90px;
+            outline: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="6" viewBox="0 0 12 6"><path fill="%2343b883" d="M0 0l6 6 6-6z"/></svg>');
+            background-repeat: no-repeat;
+            background-position: right 8px center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-radius: 0;
+            text-align: center;
+            display: block;
+        }
+
+        body.dark-theme .search-bar {
+            border-color: #323642;
+            background-color: #1e2128;
+        }
+
+        body.dark-theme .search-bar select {
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="6" viewBox="0 0 12 6"><path fill="%235d7fb9" d="M0 0l6 6 6-6z"/></svg>');
+            background-position: right 8px center;
+            background-color: #252830;
+            color: #5d7fb9;
+        }
+
+        body.dark-theme .search-bar input {
+            background-color: #252830;
+            color: #e3e3e3;
+        }
+
+        body.dark-theme .search-bar button {
+            background-color: #5d7fb9;
+        }
+
+        body.dark-theme select option {
+            background-color: #252830;
+            color: #e3e3e3;
+            white-space: nowrap;
+            overflow: visible;
         }
 
         .search-bar input {
             flex: 1;
+            border: none;
+            padding: 10px 15px;
+            font-size: 14px;
+            background-color: #fff;
+            outline: none;
         }
 
         .search-bar button {
-            flex: 0 0 auto;
+            border: none;
+            background-color: #43b883;
+            color: white;
+            padding: 0 20px;
+            cursor: pointer;
+            transition: background-color 0.3s;
         }
 
-        .admin-controls input,
-        .admin-controls button {
-            height: 36px;
-            padding: 0 10px;
+        .search-bar button:hover {
+            background-color: #35a674;
+        }
+
+        .category-buttons-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 6px;
+            padding: 8px 12px;
+            width: 100%;
+            max-width: 1200px;
+            margin-left: auto;
+            margin-right: auto;
+            margin-top: 5px;
+            background-color: transparent;
+            border-radius: 8px;
+            box-shadow: none;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        body.dark-theme .category-buttons-container {
+            background-color: transparent;
+            box-shadow: none;
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8;
+        }
+
+        body.dark-theme::-webkit-scrollbar-track {
+            background: #252830;
+        }
+
+        body.dark-theme::-webkit-scrollbar-thumb {
+            background: #444;
+        }
+
+        body.dark-theme::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+
+        .category-buttons-container::-webkit-scrollbar {
+            height: 4px;
+        }
+
+        .floating-button-group {
+            position: fixed;
+            bottom: 50px;
+            right: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            z-index: 1000;
+        }
+
+        .floating-button-group button {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #43b883;
+            color: white;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+            transition: all 0.2s ease;
+        }
+
+        .floating-button-group button:hover {
+            transform: translateY(-2px);
+            background-color: #369f6b;
+        }
+
+        #back-to-top-btn {
+            display: none;
+        }
+
+        body.dark-theme .floating-button-group button {
+            background-color: #5d7fb9;
+        }
+
+        body.dark-theme .floating-button-group button:hover {
+            background-color: #4a6fa5;
+        }
+
+        #theme-toggle {
+            font-size: 24px;
+            line-height: 40px;
+        }
+
+        #dialog-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            backdrop-filter: blur(3px);
+            transition: all 0.3s ease;
+        }
+
+        #dialog-box {
+            background-color: white;
+            padding: 25px;
+            border-radius: 10px;
+            width: 350px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            animation: dialogFadeIn 0.3s ease;
+        }
+
+        @keyframes dialogFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        #dialog-box input,
+        #dialog-box select {
+            width: 100%;
+            margin-bottom: 12px;
+            padding: 8px 10px;
+            border: 1px solid #e0e0e0;
+            border-radius: 5px;
             font-size: 14px;
+            transition: all 0.3s ease;
+            box-sizing: border-box;
         }
 
-        .category-button {
-            flex: 0 0 auto;
-            font-size: 12px;
-            padding: 5px 12px;
-            white-space: nowrap;
-            margin: 0 3px; /* 水平间距 */
+        #dialog-box input:focus,
+        #dialog-box select:focus {
+            border-color: #43b883;
+            box-shadow: 0 0 0 2px rgba(67, 184, 131, 0.2);
+            outline: none;
+        }
+
+        #dialog-box label {
+            display: block;
+            margin-bottom: 3px;
+            font-weight: 500;
+            color: #222;
+        }
+
+        #dialog-box button {
+            background-color: #43b883;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-right: 10px;
+        }
+
+        #dialog-box button:hover {
+            background-color: #35a674;
+        }
+
+        #dialog-box button.cancel {
+            background-color: #f0f0f0;
+            color: #333;
+        }
+
+        #dialog-box button.cancel:hover {
+            background-color: #e0e0e0;
+        }
+
+        body.dark-theme #dialog-box {
+            background-color: #252830;
+            color: #e3e3e3;
+        }
+
+        body.dark-theme #dialog-box input,
+        body.dark-theme #dialog-box select {
+            background-color: #323642;
+            color: #e3e3e3;
+            border-color: #444;
+        }
+
+        body.dark-theme #dialog-box label {
+            color: #a0b7d4;
+        }
+
+        .section {
+            margin-bottom: 25px;
+            padding: 0 15px;
+        }
+
+        .section-title-container {
+            display: flex;
+            align-items: center;
+            margin-bottom: 18px;
+            border-bottom: 1px solid #e0e0e0;
+            padding-bottom: 10px;
+            transition: border-color 0.3s ease;
+            width: 100%;
+            max-width: 1520px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        body.dark-theme .section-title-container {
+            border-bottom-color: #2a2e38;
+        }
+
+        .section-title {
+            font-size: 22px;
+            font-weight: 600;
+            color: #43b883;
+            position: relative;
+            padding-left: 15px;
+            transition: color 0.3s ease;
+            min-width: 120px;
+        }
+
+        body.dark-theme .section-title {
+            color: #5d7fb9;
+        }
+
+        .section-title:before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 5px;
+            height: 22px;
+            background-color: #43b883;
+            border-radius: 2px;
+        }
+
+        body.dark-theme .section-title:before {
+            background-color: #5d7fb9;
+        }
+
+        .delete-category-btn {
+            background-color: #ff9800;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-left: 15px;
+            font-size: 13px;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
+        }
+
+        .delete-category-btn:hover {
+            background-color: #f57c00;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        body.dark-theme .delete-category-btn {
+            background-color: #ff9800;
+            color: #252830;
         }
 
         .card-container {
             display: grid;
-            grid-template-columns: repeat(2, minmax(140px, 1fr));
-            column-gap: 20px;
-            row-gap: 10px;
-            justify-content: center;
-            padding: 12px;
+            grid-template-columns: repeat(auto-fit, 150px);
+            column-gap: 35px;
+            row-gap: 15px;
+            justify-content: start;
+            padding: 15px;
+            padding-left: 45px;
             margin: 0 auto;
+            max-width: 1600px;
         }
 
         .card {
-            width: auto;
-            max-width: 100%;
-            padding: 12px;
-            margin: 0;
+            background-color: white;
             border-radius: 8px;
+            padding: 12px;
+            width: 150px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.06);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            user-select: none;
+            border-left: 3px solid #43b883;
+            animation: fadeIn 0.3s ease forwards;
+            animation-delay: calc(var(--card-index) * 0.05s);
+            opacity: 0;
+            margin: 2px;
+        }
+
+        .admin-mode .card {
+            z-index: 20;
+        }
+
+        body.dark-theme .card {
+            background-color: #1e2128;
+            border-left-color: #5d7fb9;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.08);
+        }
+
+        .card-top {
+            display: flex;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+
+        .card-icon {
+            width: 16px;
+            height: 16px;
+            margin-right: 5px;
+            border-radius: 4px;
+            object-fit: cover;
         }
 
         .card-title {
-            font-size: 13px;
+            font-size: 15px;
+            font-weight: 600;
+            color: #222;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            max-width: 100%;
+            transition: color 0.3s ease;
         }
 
         .card-url {
-            font-size: 11px;
+            font-size: 12px;
+            color: #888;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            max-width: 100%;
+            transition: color 0.3s ease;
         }
 
-        .add-remove-controls {
+        body.dark-theme .card-title {
+            color: #e3e3e3;
+        }
+
+        body.dark-theme .card-url {
+            color: #a0a0a0;
+        }
+
+        .private-tag {
+            background-color: #ff9800;
+            color: white;
+            font-size: 10px;
+            padding: 2px 5px;
+            border-radius: 3px;
+            position: absolute;
+            top: 18px;
             right: 5px;
-            bottom: 150px;
-            top: auto;
-            transform: none;
-            flex-direction: column;
-            gap: 15px;
+            z-index: 5;
         }
 
-        .round-btn {
-            right: 10px;
+        #copyright {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 40px;
+            background-color: rgba(255, 255, 255, 0.9);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 14px;
+            z-index: 1000;
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.03);
+            backdrop-filter: blur(5px);
+            transition: all 0.3s ease;
+        }
+
+        #copyright p {
+            margin: 0;
+            font-weight: 500;
+            color: #666;
+        }
+
+        #copyright a {
+            color: #43b883;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        #copyright a:after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 1px;
+            bottom: 0;
+            left: 0;
+            background-color: #43b883;
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+
+        #copyright a:hover:after {
+            transform: scaleX(1);
+        }
+
+        body.dark-theme #copyright {
+            background-color: rgba(37, 40, 48, 0.9);
+            color: #e3e3e3;
+        }
+
+        body.dark-theme #copyright a {
+            color: #5d7fb9;
+        }
+
+        body.dark-theme #copyright a:after {
+            background-color: #5d7fb9;
+        }
+
+        @media (max-width: 480px) {
+            .fixed-elements {
+                position: fixed;
+                padding: 8px 12px 5px 12px;
+                height: auto;
+                min-height: 140px;
+                box-shadow: none;
+            }
+            body.dark-theme .fixed-elements {
+                box-shadow: none;
+            }
+            #hitokoto {
+                margin: 3px 0 6px 0;
+                font-size: 12px;
+                line-height: 1.3;
+                padding: 0 8px;
+            }
+            .category-buttons-container {
+                width: 100%;
+                max-width: none;
+                padding: 6px;
+                overflow-x: auto;
+                flex-wrap: nowrap;
+                justify-content: center;
+                margin: 8px auto 5px;
+                scrollbar-width: none;
+                -ms-overflow-style: none;
+                background-color: transparent;
+                border-radius: 8px;
+                gap: 4px;
+            }
+            body.dark-theme .category-buttons-container {
+                background-color: transparent;
+            }
+            .category-button {
+                padding: 4px 8px;
+                font-size: 11px;
+                margin: 0 1px;
+                flex: 0 0 auto;
+                white-space: nowrap;
+            }
+            .content {
+                margin-top: 175px;
+                margin-bottom: 100px;
+                padding: 15px;
+                transition: opacity 0.3s ease;
+            }
+            .center-content {
+                position: static;
+                transform: none;
+                width: 100%;
+                text-align: center;
+                padding: 0 8px;
+            }
+            .loading .content {
+                opacity: 0.6;
+            }
+            .search-container {
+                margin-top: 15px;
+            }
+            .search-bar {
+                flex-wrap: nowrap;
+                max-width: 320px;
+                width: 90%;
+                margin: 6px auto 8px auto;
+            }
+            .search-bar select {
+                width: 80px;
+                flex: 0 0 auto;
+                font-size: 12px;
+            }
+            .search-bar input {
+                flex: 1;
+            }
+            .search-bar button {
+                flex: 0 0 auto;
+            }
+            .admin-controls input,
+            .admin-controls button {
+                height: 36px;
+                padding: 0 10px;
+                font-size: 14px;
+            }
+            .card-container {
+                display: grid;
+                grid-template-columns: repeat(2, minmax(140px, 1fr));
+                column-gap: 20px;
+                row-gap: 10px;
+                justify-content: center;
+                padding: 12px;
+                margin: 0 auto;
+            }
+            .card {
+                width: auto;
+                max-width: 100%;
+                padding: 12px;
+                margin: 0;
+                border-radius: 8px;
+            }
+            .card-title {
+                font-size: 13px;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                max-width: 100%;
+            }
+            .card-url {
+                font-size: 11px;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                max-width: 100%;
+            }
+            .add-remove-controls {
+                right: 10px;
+                bottom: 125px;
+                top: auto;
+                left: auto;
+                transform: none;
+                flex-direction: column;
+                gap: 15px;
+            }
+            .round-btn {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                width: 36px;
+                height: 36px;
+                font-size: 20px;
+            }
+            .floating-button-group {
+                bottom: 20px;
+                right: 10px;
+            }
+            .floating-button-group button {
+                width: 36px;
+                height: 36px;
+                font-size: 18px;
+            }
+            #dialog-box {
+                width: 90%;
+                max-width: 350px;
+                padding: 20px;
+            }
+            .section-title {
+                font-size: 20px;
+                min-width: 100px;
+            }
+            .card-actions {
+                top: -10px;
+                right: -10px;
+            }
+            .card-btn {
+                width: 32px;
+                height: 32px;
+            }
+            .card-btn svg {
+                width: 18px;
+                height: 18px;
+            }
+            .fixed-elements {
+                display: block;
+                padding: 10px;
+                height: auto !important;
+            }
+            .fixed-elements h3 {
+                position: absolute;
+                top: 12px;
+                left: 15px;
+                margin: 0;
+                font-size: 18px;
+                font-weight: bold;
+            }
+            .top-right-controls {
+                position: absolute;
+                top: 10px;
+                right: 10px;
+                margin: 0;
+                gap: 8px;
+                flex-wrap: nowrap;
+            }
+            .top-right-controls .admin-btn,
+            .top-right-controls .login-btn {
+                padding: 5px 8px;
+                font-size: 12px;
+            }
+            .top-right-controls .bookmark-search-toggle {
+                width: 30px;
+                height: 30px;
+            }
+            .top-right-controls .bookmark-search-toggle svg {
+                width: 16px;
+                height: 16px;
+            }
+            .center-content {
+                position: static !important;
+                transform: none !important;
+                width: 100%;
+                padding: 0 10px;
+                margin-top: 40px;
+            }
+            .search-container {
+                width: 100%;
+                margin-top: 6px;
+            }
+            .search-bar {
+                max-width: 100%;
+                flex-wrap: nowrap;
+            }
+        }
+
+        .card-click-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 10;
+            display: none;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .admin-mode .card-click-overlay {
+            display: flex;
+        }
+
+        .card-edit-zone,
+        .card-delete-zone {
+            width: 50%;
+            height: 100%;
+            cursor: pointer;
+            position: relative;
+            transition: background-color 0.2s ease;
             display: flex;
             align-items: center;
             justify-content: center;
-            width: 36px;
-            height: 36px;
-            font-size: 20px;
         }
 
-        .floating-button-group {
-            bottom: 20px;
-            right: 10px;
+        .card-edit-zone {
+            background-color: rgba(67, 184, 131, 0.2);
         }
 
-        .floating-button-group button {
-            width: 36px;
-            height: 36px;
-            font-size: 18px;
+        .card-delete-zone {
+            background-color: rgba(231, 76, 60, 0.2);
         }
 
-        #dialog-box {
-            width: 90%;
-            max-width: 350px;
-            padding: 20px;
+        .card-edit-zone:hover {
+            background-color: rgba(67, 184, 131, 0.4);
         }
 
-        .section-title {
-            font-size: 20px;
-            min-width: 100px;
+        .card-delete-zone:hover {
+            background-color: rgba(231, 76, 60, 0.4);
         }
-    }
 
-    /* 自定义对话框样式 */
-    .dialog-overlay {
-        display: none;
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0, 0, 0, 0.6);
-        backdrop-filter: blur(4px);
-        justify-content: center;
-        align-items: center;
-        z-index: 1000;
-        animation: fadeIn 0.3s ease;
-    }
-
-    .dialog-box {
-        background-color: #ffffff;
-        padding: 24px;
-        border-radius: 12px;
-        width: 340px;
-        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-        transform: translateY(-20px);
-        animation: slideUp 0.3s ease forwards;
-    }
-
-    .dialog-title {
-        margin: 0 0 15px 0;
-        font-size: 18px;
-        color: #333;
-    }
-
-    .dialog-content {
-        padding: 15px 0;
-        margin-bottom: 16px;
-        font-size: 16px;
-        line-height: 1.5;
-        color: #333;
-    }
-
-    .dialog-box input[type="text"] {
-        width: 100%;
-        margin-bottom: 16px;
-        padding: 10px 12px;
-        border: 1px solid #e0e0e0;
-        border-radius: 8px;
-        font-size: 14px;
-        transition: all 0.2s;
-        box-sizing: border-box;
-        background-color: #ffffff !important;
-    }
-
-    .dialog-box input[type="text"]:focus {
-        border-color: #4a90e2 !important;
-        outline: none;
-        box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.2);
-    }
-
-    .dialog-buttons {
-        display: flex;
-        justify-content: flex-end;
-        gap: 10px;
-    }
-
-    .dialog-box button {
-        padding: 8px 16px;
-        border-radius: 6px;
-        border: none;
-        font-size: 14px;
-        cursor: pointer;
-        transition: all 0.2s;
-    }
-
-    .dialog-confirm-btn {
-        background-color: #43b883;
-        color: white;
-    }
-
-    .dialog-confirm-btn:hover {
-        background-color: #3aa876;
-    }
-
-    .dialog-cancel-btn {
-        background-color: #f0f0f0;
-        color: #555;
-    }
-
-    .dialog-cancel-btn:hover {
-        background-color: #e0e0e0;
-    }
-
-    .top-z-index {
-        z-index: 9999;
-    }
-
-    /* 动画效果 */
-    @keyframes fadeIn {
-        from { opacity: 0; }
-        to { opacity: 1; }
-    }
-
-    @keyframes slideUp {
-        from {
-            transform: translateY(20px);
-            opacity: 0;
+        .card-edit-zone::after,
+        .card-delete-zone::after {
+            content: '';
+            width: 28px;
+            height: 28px;
+            opacity: 0.7;
+            transition: opacity 0.2s ease;
+            background-repeat: no-repeat;
+            background-position: center;
+            background-size: contain;
         }
-        to {
-            transform: translateY(0);
+
+        .card-edit-zone:hover::after,
+        .card-delete-zone:hover::after {
             opacity: 1;
         }
-    }
 
-    /* 暗色主题对话框样式 */
-    body.dark-theme .dialog-box {
-        background-color: #2d3748;
-        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
-    }
-
-    body.dark-theme .dialog-title {
-        color: #f8f9fa;
-    }
-
-    body.dark-theme .dialog-content {
-        color: #f8f9fa;
-    }
-
-    body.dark-theme .dialog-box input[type="text"] {
-        background-color: #3c4658 !important;
-        color: #e3e3e3 !important;
-        border-color: #4a5568 !important;
-    }
-
-    body.dark-theme .dialog-box input[type="text"]:focus {
-        border-color: #5a9cec !important;
-        box-shadow: 0 0 0 3px rgba(90, 156, 236, 0.3);
-    }
-
-    body.dark-theme .dialog-cancel-btn {
-        background-color: #4a5568;
-        color: #e3e3e3;
-    }
-
-    body.dark-theme .dialog-cancel-btn:hover {
-        background-color: #3c4658;
-    }
-
-    body.dark-theme .dialog-confirm-btn {
-        background-color: #5d7fb9;
-        color: white;
-    }
-
-    body.dark-theme .dialog-confirm-btn:hover {
-        background-color: #5473a9;
-    }
-
-    /* 加载遮罩样式 */
-    #loading-mask {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0,0,0,0.6);
-        backdrop-filter: blur(4px);
-        z-index: 7000;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .loading-content {
-        background-color: #fff;
-        padding: 20px 40px;
-        border-radius: 10px;
-        text-align: center;
-        box-shadow: 0 0 10px #0003;
-        font-size: 16px;
-        color: #333;
-    }
-
-    /* 加载动画 */
-    .spinner {
-        width: 40px;
-        height: 40px;
-        border: 4px solid #ccc;
-        border-top-color: #3498db;
-        border-radius: 50%;
-        margin: 0 auto 10px;
-        animation: spin 1s linear infinite;
-    }
-
-    @keyframes spin {
-        to {
-            transform: rotate(360deg);
-        }
-    }
-
-    body.dark-theme .loading-content {
-        background-color: #2d3748;
-        color: #f8f9fa;
-    }
-
-    /* 分类管理按钮样式 */
-    .edit-category-btn, .move-category-btn {
-        background-color: #43b883;
-        color: white;
-        border: none;
-        padding: 4px 8px;
-        margin-left: 8px;
-        border-radius: 4px;
-        font-size: 12px;
-        cursor: pointer;
-        transition: all 0.2s;
-        display: none;
-    }
-
-    .edit-category-btn:hover {
-        background-color: #3aa876;
-    }
-
-    .move-category-btn {
-        background-color: #5d7fb9;
-        padding: 4px 6px;
-        min-width: 28px;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .move-category-btn:hover {
-        background-color: #5473a9;
-    }
-
-    .move-category-btn svg {
-        width: 16px;
-        height: 16px;
-        fill: white;
-    }
-
-    .delete-category-btn {
-        background-color: #e74c3c;
-        color: white;
-        border: none;
-        padding: 4px 8px;
-        margin-left: 8px;
-        border-radius: 4px;
-        font-size: 12px;
-        cursor: pointer;
-        transition: all 0.2s;
-        display: none;
-    }
-
-    .delete-category-btn:hover {
-        background-color: #c0392b;
-    }
-
-    /* 暗色主题下的分类管理按钮 */
-    body.dark-theme .edit-category-btn {
-        background-color: #5d7fb9;
-    }
-
-    body.dark-theme .edit-category-btn:hover {
-        background-color: #5473a9;
-    }
-
-    body.dark-theme .move-category-btn {
-        background-color: #43b883;
-    }
-
-    body.dark-theme .move-category-btn:hover {
-        background-color: #3aa876;
-    }
-
-    body.dark-theme .delete-category-btn {
-        background-color: #e74c3c;
-    }
-
-    body.dark-theme .delete-category-btn:hover {
-        background-color: #c0392b;
-    }
-
-    /* 按钮顺序控制 */
-    .add-btn { order: 1; }
-    .remove-btn { order: 2; }
-    .category-add-btn { order: 3; }
-    .category-manage-btn { order: 4; }
-
-    /* 分类管理按钮激活状态 */
-    .category-manage-btn.active {
-        background-color: #e74c3c;
-    }
-
-    .category-manage-btn.active:hover {
-        background-color: #c0392b;
-    }
-
-    /* 卡片描述样式 */
-    .card-tip {
-        font-size: 12px;
-        color: #666;
-        display: -webkit-box;
-        -webkit-line-clamp: 2;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        line-height: 14px;
-        max-height: 28px;
-        margin-top: 5px;
-    }
-
-    body.dark-theme .card-tip {
-        color: #a0a0a0;
-    }
-
-    /* 卡片按钮容器 */
-    .card-actions {
-        position: absolute;
-        top: -12px;
-        right: -12px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 4px;
-        z-index: 15;
-        height: 24px;
-    }
-
-    /* 卡片按钮通用样式 */
-    .card-btn {
-        position: relative;
-        z-index: 1;
-        width: 24px;
-        height: 24px;
-        border: none;
-        border-radius: 50%;
-        background: #43b883;
-        color: white;
-        font-size: 12px;
-        cursor: pointer;
-        display: none;
-        align-items: center;
-        justify-content: center;
-        transition: transform 0.2s, opacity 0.2s, box-shadow 0.2s;
-        padding: 0;
-        margin: 0;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-        flex-shrink: 0;
-        vertical-align: top;
-    }
-
-    .card-btn:hover {
-        z-index: 2;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-    }
-
-    .card-btn svg {
-        width: 14px;
-        height: 14px;
-        stroke: currentColor;
-        fill: none;
-        display: block;
-        margin: auto;
-    }
-
-    .edit-btn {
-        background: #43b883;
-    }
-
-    .delete-btn {
-        background: #e74c3c;
-    }
-
-    body.dark-theme .edit-btn {
-        background: #5d7fb9;
-    }
-
-    body.dark-theme .delete-btn {
-        background: #e74c3c;
-    }
-
-    /* 自定义提示框样式 */
-    #custom-tooltip {
-        position: absolute;
-        display: none;
-        z-index: 700;
-        background: #43b883;
-        color: #fff;
-        padding: 6px 10px;
-        border-radius: 5px;
-        font-size: 12px;
-        pointer-events: none;
-        max-width: 300px;
-        white-space: pre-wrap;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-        transition: opacity 0.2s ease;
-    }
-
-    body.dark-theme #custom-tooltip {
-        background: #5d7fb9;
-        color: #fff;
-    }
-
-    /* 卡片悬停效果 */
-    @media (hover: hover) and (pointer: fine) {
-        .card:hover {
-            transform: scale(1.05);
-            box-shadow: 0 10px 10px rgba(0, 0, 0, 0.3);
+        .card-edit-zone::after {
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>');
         }
 
-        .card.no-hover:hover {
-            transform: none !important;
-            box-shadow: 0 5px 5px rgba(0, 0, 0, 0.2) !important;
+        .card-delete-zone::after {
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>');
         }
 
-        body.dark-theme .card.no-hover:hover {
-            transform: none !important;
-            box-shadow: 0 5px 5px rgba(0, 0, 0, 0.2) !important;
+        .dialog-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            animation: fadeIn 0.3s ease;
         }
-    }
 
+        .dialog-box {
+            background-color: #ffffff;
+            padding: 24px;
+            border-radius: 12px;
+            width: 340px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            transform: translateY(-20px);
+            animation: slideUp 0.3s ease forwards;
+        }
 
+        .dialog-title {
+            margin: 0 0 15px 0;
+            font-size: 18px;
+            color: #333;
+        }
+
+        .dialog-content {
+            padding: 15px 0;
+            margin-bottom: 16px;
+            font-size: 16px;
+            line-height: 1.5;
+            color: #333;
+        }
+
+        .dialog-box input[type="text"] {
+            width: 100%;
+            margin-bottom: 16px;
+            padding: 10px 12px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.2s;
+            box-sizing: border-box;
+            background-color: #ffffff !important;
+        }
+
+        .dialog-box input[type="text"]:focus {
+            border-color: #4a90e2 !important;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.2);
+        }
+
+        .dialog-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        .dialog-box button {
+            padding: 8px 16px;
+            border-radius: 6px;
+            border: none;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .dialog-confirm-btn {
+            background-color: #43b883;
+            color: white;
+        }
+
+        .dialog-confirm-btn:hover {
+            background-color: #3aa876;
+        }
+
+        .dialog-cancel-btn {
+            background-color: #f0f0f0;
+            color: #555;
+        }
+
+        .dialog-cancel-btn:hover {
+            background-color: #e0e0e0;
+        }
+
+        .top-z-index {
+            z-index: 9999;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        body.dark-theme .dialog-box {
+            background-color: #2d3748;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        body.dark-theme .dialog-title {
+            color: #f8f9fa;
+        }
+
+        body.dark-theme .dialog-content {
+            color: #f8f9fa;
+        }
+
+        body.dark-theme .dialog-box input[type="text"] {
+            background-color: #3c4658 !important;
+            color: #e3e3e3 !important;
+            border-color: #4a5568 !important;
+        }
+
+        body.dark-theme .dialog-box input[type="text"]:focus {
+            border-color: #5a9cec !important;
+            box-shadow: 0 0 0 3px rgba(90, 156, 236, 0.3);
+        }
+
+        body.dark-theme .dialog-cancel-btn {
+            background-color: #4a5568;
+            color: #e3e3e3;
+        }
+
+        body.dark-theme .dialog-cancel-btn:hover {
+            background-color: #3c4658;
+        }
+
+        body.dark-theme .dialog-confirm-btn {
+            background-color: #5d7fb9;
+            color: white;
+        }
+
+        body.dark-theme .dialog-confirm-btn:hover {
+            background-color: #5473a9;
+        }
+
+        #loading-mask {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+            z-index: 7000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .loading-content {
+            background-color: #fff;
+            padding: 20px 40px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 0 10px #0003;
+            font-size: 16px;
+            color: #333;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #ccc;
+            border-top-color: #3498db;
+            border-radius: 50%;
+            margin: 0 auto 10px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        body.dark-theme .loading-content {
+            background-color: #2d3748;
+            color: #f8f9fa;
+        }
+
+        .edit-category-btn,
+        .delete-category-btn,
+        .move-category-btn {
+            color: white;
+            border: none;
+            margin-left: 8px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.2s;
+            width: 30px;
+            height: 30px;
+            padding: 0;
+            font-size: 0;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .move-category-btn {
+            padding: 0;
+            min-width: auto;
+        }
+
+        .move-category-btn svg {
+            width: 20px;
+            height: 20px;
+            fill: white;
+        }
+
+        .edit-category-btn {
+            background-color: #43b883;
+        }
+
+        .delete-category-btn {
+            background-color: #e74c3c;
+        }
+
+        .move-category-btn {
+            background-color: #5d7fb9;
+        }
+
+        .edit-category-btn:hover {
+            background-color: #3aa876;
+        }
+
+        .delete-category-btn:hover {
+            background-color: #c0392b;
+        }
+
+        .move-category-btn:hover {
+            background-color: #5473a9;
+        }
+
+        body.dark-theme .edit-category-btn {
+            background-color: #5d7fb9;
+        }
+
+        body.dark-theme .edit-category-btn:hover {
+            background-color: #5473a9;
+        }
+
+        body.dark-theme .move-category-btn {
+            background-color: #43b883;
+        }
+
+        body.dark-theme .move-category-btn:hover {
+            background-color: #3aa876;
+        }
+
+        body.dark-theme .delete-category-btn {
+            background-color: #e74c3c;
+        }
+
+        body.dark-theme .delete-category-btn:hover {
+            background-color: #c0392b;
+        }
+
+        .add-btn {
+            order: 1;
+        }
+
+        .category-add-btn {
+            order: 3;
+        }
+
+        .category-manage-btn {
+            order: 4;
+        }
+
+        .backup-manage-btn {
+            order: 5;
+        }
+
+        .category-manage-btn.active {
+            background-color: #e74c3c;
+        }
+
+        .category-manage-btn.active:hover {
+            background-color: #c0392b;
+        }
+
+        .card-tip {
+            font-size: 12px;
+            color: #666;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            line-height: 14px;
+            max-height: 28px;
+            margin-top: 5px;
+        }
+
+        body.dark-theme .card-tip {
+            color: #a0a0a0;
+        }
+
+        #custom-tooltip {
+            position: absolute;
+            display: none;
+            z-index: 700;
+            background: #43b883;
+            color: #fff;
+            padding: 6px 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            pointer-events: none;
+            max-width: 300px;
+            white-space: pre-wrap;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            transition: opacity 0.2s ease;
+        }
+
+        body.dark-theme #custom-tooltip {
+            background: #5d7fb9;
+            color: #fff;
+        }
+
+        @media (hover: hover) and (pointer: fine) {
+            .card:hover {
+                transform: scale(1.05);
+                box-shadow: 0 10px 10px rgba(0, 0, 0, 0.3);
+            }
+        }
+
+        .backup-modal-content {
+            background-color: white;
+            padding: 0;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 550px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            animation: dialogFadeIn 0.3s ease;
+            overflow: hidden;
+        }
+
+        .backup-modal-header {
+            padding: 15px 20px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .backup-modal-header h3 {
+            margin: 0;
+            font-size: 18px;
+            color: #333;
+        }
+
+        .backup-modal-header p {
+            margin: 5px 0 0;
+            font-size: 12px;
+            color: #888;
+        }
+
+        .backup-modal-main {
+            padding: 15px 20px;
+        }
+
+        .backup-info-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #f8f9fa;
+            padding: 10px 15px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+        }
+
+        .backup-info-bar p {
+            margin: 0;
+            font-size: 13px;
+            color: #555;
+        }
+
+        .backup-info-bar button {
+            background-color: #43b883;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s;
+        }
+
+        .backup-info-bar button:hover {
+            background-color: #3aa876;
+        }
+
+        .backup-list-container {
+            max-height: 250px;
+            overflow-y: auto;
+            border: 1px solid #eee;
+            border-radius: 6px;
+            padding: 5px;
+        }
+
+        .backup-list-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            border-bottom: 1px solid #f0f0f0;
+            font-size: 14px;
+        }
+
+        .backup-list-item:last-child {
+            border-bottom: none;
+        }
+
+        .backup-list-item .timestamp {
+            color: #333;
+        }
+
+        .backup-list-item .actions a {
+            color: #007bff;
+            text-decoration: none;
+            margin-left: 15px;
+            cursor: pointer;
+            font-size: 13px;
+        }
+
+        .backup-list-item .actions a:hover {
+            text-decoration: underline;
+        }
+
+        .backup-list-item .actions .delete-backup-btn {
+            color: #e74c3c;
+            margin-left: 8px;
+            font-size: 16px;
+            vertical-align: middle;
+            transition: transform 0.2s;
+        }
+
+        .backup-list-item .actions .delete-backup-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .backup-modal-footer {
+            padding: 15px 20px;
+            text-align: right;
+            border-top: 1px solid #eee;
+        }
+
+        .backup-modal-footer button {
+            background-color: #6c757d;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .backup-modal-footer button:hover {
+            background-color: #5a6268;
+        }
+
+        body.dark-theme .backup-modal-content {
+            background-color: #2d3748;
+        }
+
+        body.dark-theme .backup-modal-header {
+            border-bottom-color: #4a5568;
+        }
+
+        body.dark-theme .backup-modal-header h3 {
+            color: #f8f9fa;
+        }
+
+        body.dark-theme .backup-modal-header p {
+            color: #a0aec0;
+        }
+
+        body.dark-theme .backup-info-bar {
+            background-color: #1a202c;
+        }
+
+        body.dark-theme .backup-info-bar p {
+            color: #e2e8f0;
+        }
+
+        body.dark-theme .backup-info-bar button {
+            background-color: #5d7fb9;
+        }
+
+        body.dark-theme .backup-info-bar button:hover {
+            background-color: #5473a9;
+        }
+
+        body.dark-theme .backup-list-container {
+            border-color: #4a5568;
+        }
+
+        body.dark-theme .backup-list-item {
+            border-bottom-color: #4a5568;
+        }
+
+        body.dark-theme .backup-list-item .timestamp {
+            color: #f8f9fa;
+        }
+
+        body.dark-theme .backup-list-item .actions a {
+            color: #63b3ed;
+        }
+
+        body.dark-theme .backup-modal-footer {
+            border-top-color: #4a5568;
+        }
     </style>
 </head>
 
 <body>
     <div class="fixed-elements">
-        <h3>我的导航</h3>
+        <h3>寂静导航</h3>
         <div class="center-content">
-            <!-- 一言模块 -->
             <p id="hitokoto">
                 <a href="#" id="hitokoto_text"></a>
             </p>
             <script src="https://v1.hitokoto.cn/?encode=js&select=%23hitokoto" defer></script>
-            <!-- 搜索栏 -->
             <div class="search-container">
                 <div class="search-bar">
                     <select id="search-engine-select">
+                        <option value="SearXNG">SearXNG</option>
                         <option value="baidu">百度</option>
                         <option value="bing">必应</option>
                         <option value="google">谷歌</option>
@@ -1814,66 +1903,59 @@ const HTML_CONTENT = `
             </div>
             <div id="category-buttons-container" class="category-buttons-container"></div>
         </div>
-        <!-- 右上角控制区域 -->
         <div class="top-right-controls">
             <button class="admin-btn" id="admin-btn" onclick="toggleAdminMode()" style="display: none;">设置</button>
             <button class="login-btn" id="login-btn" onclick="handleLoginClick()">登录</button>
-            <button class="github-btn has-tooltip tooltip-bottom tooltip-green" onclick="openGitHub()" data-tooltip="喜欢请点个star">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
-                </svg>
-            </button>
             <div class="bookmark-search-toggle" onclick="toggleBookmarkSearch()">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="11" cy="11" r="8"></circle>
-                    <path d="m21 21-4.35-4.35"></path>
-                    <line x1="11" y1="8" x2="11" y2="14"></line>
-                    <line x1="8" y1="11" x2="14" y2="11"></line>
-                </svg>
-                <div class="bookmark-search-dropdown" id="bookmark-search-dropdown">
-                    <input type="text" id="bookmark-search-input" placeholder="搜索书签...">
-                </div>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <div class="bookmark-search-dropdown" id="bookmark-search-dropdown">
+                <input type="text" id="bookmark-search-input" placeholder="搜索书签...">
             </div>
+        </div>
         </div>
     </div>
     <div class="content">
-        <!-- 管理控制按钮 -->
         <div class="add-remove-controls">
-            <button class="round-btn add-btn" onclick="showAddDialog()" title="添加链接">
+            <button id="add-btn" class="round-btn add-btn" onclick="showAddDialog()" title="添加链接">
                 <svg viewBox="0 0 48 48" width="24" height="24" xmlns="http://www.w3.org/2000/svg">
                     <path d="M16 6H8a2 2 0 0 0-2 2v8M16 42H8a2 2 0 0 1-2-2v-8M32 42h8a2 2 0 0 0 2-2v-8M32 6h8a2 2 0 0 1 2 2v8" stroke="white" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
                     <path d="M32 24H16M24 16v16" stroke="white" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
                 </svg>
             </button>
 
-            <button class="round-btn remove-btn" onclick="toggleRemoveMode()" title="编辑链接">
-                <svg viewBox="0 0 48 48" width="24" height="24" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M42 26v14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h14" stroke="white" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-                    <path d="M14 26.72V34h7.32L42 13.31 34.7 6 14 26.72Z" stroke="white" stroke-width="4" stroke-linejoin="round" fill="none"/>
-                </svg>
-            </button>
-
-            <button class="round-btn category-add-btn" onclick="addCategory()" title="添加分类">
+            <button id="category-add-btn" class="round-btn category-add-btn" onclick="addCategory()" title="添加分类">
                 <svg viewBox="0 0 48 48" width="24" height="24" xmlns="http://www.w3.org/2000/svg">
                     <path d="M5 8c0-1.1.9-2 2-2h12l5 6h17c1.1 0 2 .9 2 2v26c0 1.1-.9 2-2 2H7c-1.1 0-2-.9-2-2V8Z" stroke="white" stroke-width="4" stroke-linejoin="round" fill="none"/>
                     <path d="M18 27h12M24 21v12" stroke="white" stroke-width="4" stroke-linecap="round"/>
                 </svg>
             </button>
 
-            <button class="round-btn category-manage-btn" onclick="toggleEditCategory()" title="编辑分类">
+            <button id="export-btn" class="round-btn export-btn" onclick="exportBookmarks()" title="导出书签" style="display:none;">
                 <svg viewBox="0 0 48 48" width="24" height="24" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M5 8c0-1.1.9-2 2-2h12l5 6h17c1.1 0 2 .9 2 2v26c0 1.1-.9 2-2 2H7c-1.1 0-2-.9-2-2V8Z" stroke="white" stroke-width="4" stroke-linejoin="round" fill="none"/>
-                    <circle cx="24" cy="28" r="4" stroke="white" stroke-width="4" fill="none"/>
-                    <path d="M24 21v3m0 8v3m4.8-12-2.1 2.1M20.8 31l-2.1 2.1M19 23l2.1 2.1M27 31l2.1 2.1M17 28h3M28 28h3" stroke="white" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M24 4v28M12 20l12 12 12-12" stroke="white" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                    <path d="M6 40h36" stroke="white" stroke-width="4" stroke-linecap="round"/>
+                </svg>
+            </button>
+
+            <button id="import-btn" class="round-btn import-btn" onclick="handleImportClick()" title="导入书签" style="display:none;">
+                <svg viewBox="0 0 48 48" width="24" height="24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M24 44V16M12 28l12-12 12 12" stroke="white" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                    <path d="M6 8h36" stroke="white" stroke-width="4" stroke-linecap="round"/>
+                </svg>
+            </button>
+            <button id="backup-manage-btn" class="round-btn backup-manage-btn" onclick="showBackupManager()" title="备份与恢复">
+                <svg viewBox="0 0 48 48" width="24" height="24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M24 4v6m0 28v6M10.343 10.343l4.243 4.243M33.414 33.414l4.243 4.243M4 24h6m28 0h6m-33.657 9.172-4.243 4.242M43.657 10.343l-4.243 4.243" stroke="white" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M37 24a13 13 0 1 1-26 0 13 13 0 0 1 26 0Z" stroke="white" stroke-width="4"/>
+                    <path d="M24 18v7h6" stroke="white" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
             </button>
         </div>
 
-
-
-        <!-- 分类和卡片容器 -->
         <div id="sections-container"></div>
-        <!-- 浮动按钮组 -->
         <div class="floating-button-group">
             <button id="back-to-top-btn" onclick="scrollToTop()" style="display: none;">
                 <svg width="24" height="24" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -1882,7 +1964,6 @@ const HTML_CONTENT = `
             </button>
             <button id="theme-toggle" onclick="toggleTheme()">◑</button>
         </div>
-        <!-- 添加链接对话框 -->
         <div id="dialog-overlay">
             <div id="dialog-box">
                 <label for="name-input">名称</label>
@@ -1905,7 +1986,6 @@ const HTML_CONTENT = `
                 </div>
             </div>
         </div>
-        <!-- 登录弹窗 -->
         <div id="login-modal" class="login-modal">
             <div class="login-modal-content">
                 <h3>登录</h3>
@@ -1917,7 +1997,6 @@ const HTML_CONTENT = `
             </div>
         </div>
 
-        <!-- 自定义Alert对话框 -->
         <div class="dialog-overlay top-z-index" id="custom-alert-overlay" style="display: none;">
             <div class="dialog-box" id="custom-alert-box">
                 <h3 class="dialog-title" id="custom-alert-title">提示</h3>
@@ -1928,7 +2007,6 @@ const HTML_CONTENT = `
             </div>
         </div>
 
-        <!-- 自定义Confirm对话框 -->
         <div class="dialog-overlay top-z-index" id="custom-confirm-overlay" style="display: none;">
             <div class="dialog-box">
                 <div class="dialog-content" id="custom-confirm-message"></div>
@@ -1939,7 +2017,6 @@ const HTML_CONTENT = `
             </div>
         </div>
 
-        <!-- 分类名称输入对话框 -->
         <div class="dialog-overlay" id="category-dialog" style="display: none;">
             <div class="dialog-box">
                 <h3 id="category-dialog-title" class="dialog-title">新建分类</h3>
@@ -1951,7 +2028,28 @@ const HTML_CONTENT = `
             </div>
         </div>
 
-        <!-- 加载遮罩 -->
+        <div class="dialog-overlay" id="backup-modal-overlay" style="display: none; z-index: 3000;">
+            <div class="backup-modal-content">
+                <div class="backup-modal-header">
+                    <h3>历史备份节点列表</h3>
+                    <p>我们为您在云端最多保留10个历史备份节点。云端历史备份需要登录后进入设置模式进行手动管理。</p>
+                </div>
+                <div class="backup-modal-main">
+                    <div class="backup-info-bar">
+                        <p id="last-backup-time">上次备份时间: 暂无</p>
+                        <button id="backup-now-btn" onclick="handleManualBackup()">🚀 立即备份</button>
+                    </div>
+                    <h4>云端历史备份节点</h4>
+                    <div id="backup-list-container" class="backup-list-container">
+                        <div style="text-align:center; padding: 20px; color: #888;">加载中...</div>
+                    </div>
+                </div>
+                <div class="backup-modal-footer">
+                    <button onclick="hideBackupManager()">关闭</button>
+                </div>
+            </div>
+        </div>
+
         <div id="loading-mask" style="display:none;">
             <div class="loading-content">
                 <div class="spinner"></div>
@@ -1962,15 +2060,24 @@ const HTML_CONTENT = `
     <div id="custom-tooltip"></div>
 
     <script>
+    // 【新增】立即执行函数，用于在页面加载时快速应用主题，防止闪烁
+    (function() {
+        if (localStorage.getItem('theme') === 'dark') {
+            document.body.classList.add('dark-theme');
+        }
+    })();
+
     // 搜索引擎配置
     const searchEngines = {
+        SearXNG: "https://ss.ayang.nyc.mn/search?q=",
         baidu: "https://www.baidu.com/s?wd=",
         bing: "https://www.bing.com/search?q=",
         google: "https://www.google.com/search?q=",
         duckduckgo: "https://duckduckgo.com/?q="
     };
 
-    let currentEngine = "baidu";
+    // 【修改】初始值现在从 localStorage 读取，如果不存在则默认为 "SearXNG"
+    let currentEngine = localStorage.getItem('lastSelectedSearchEngine') || "SearXNG";
 
     // 日志记录函数
     function logAction(action, details) {
@@ -1983,6 +2090,8 @@ const HTML_CONTENT = `
     function setActiveEngine(engine) {
         currentEngine = engine;
         document.getElementById('search-engine-select').value = engine;
+        // 【新增】将当前选择的搜索引擎保存到 localStorage
+        localStorage.setItem('lastSelectedSearchEngine', engine);
         logAction('设置搜索引擎', { engine });
     }
 
@@ -1991,7 +2100,7 @@ const HTML_CONTENT = `
         setActiveEngine(this.value);
     });
 
-    // 搜索按钮点击事件
+    // 搜索按钮点击事件 (保持不变)
     document.getElementById('search-button').addEventListener('click', () => {
         const query = document.getElementById('search-input').value;
         if (query) {
@@ -2000,13 +2109,12 @@ const HTML_CONTENT = `
         }
     });
 
-    // 搜索输入框回车事件
+    // 搜索输入框回车事件 (保持不变)
     document.getElementById('search-input').addEventListener('keypress', (e) => {
         if (e.key === 'Enter') {
             document.getElementById('search-button').click();
         }
     });
-
     // 初始化搜索引擎
     setActiveEngine(currentEngine);
 
@@ -2018,7 +2126,8 @@ const HTML_CONTENT = `
     let removeMode = false;
     let isRemoveCategoryMode = false;
     let isEditCategoryMode = false;
-    let isDarkTheme = false;
+    // 【修改】让 isDarkTheme 的初始状态直接从 localStorage 读取
+    let isDarkTheme = localStorage.getItem('theme') === 'dark';
     let links = [];
     const categories = {};
 
@@ -2388,20 +2497,33 @@ const HTML_CONTENT = `
 
 
     // 更新UI状态
-    function updateUIState() {
-        const addRemoveControls = document.querySelector('.add-remove-controls');
+function updateUIState() {
+    const addRemoveControls = document.querySelector('.add-remove-controls');
+    // 获取导出和导入按钮的元素，这样我们才能控制它们显示或隐藏
+    const exportBtn = document.getElementById('export-btn'); // 导出按钮
+    const importBtn = document.getElementById('import-btn'); // 导入按钮
+    // --- 新增 ---
+    const backupBtn = document.getElementById('backup-manage-btn'); // 备份管理按钮
 
-        if (isAdmin) {
-            addRemoveControls.style.display = 'flex';
-        } else {
-            addRemoveControls.style.display = 'none';
-        }
-
-        // 同时更新登录和设置按钮状态
-        updateLoginButton();
-
-        logAction('更新UI状态', { isAdmin, isLoggedIn });
+    if (isAdmin) { // 如果当前是管理员模式
+        addRemoveControls.style.display = 'flex'; // 显示管理员操作区域
+        // ⭐ 重点修改：在管理员模式下显示导出和导入按钮
+        if (exportBtn) exportBtn.style.display = 'flex'; // 检查按钮是否存在，然后显示它
+        if (importBtn) importBtn.style.display = 'flex'; // 检查按钮是否存在，然后显示它
+        if (backupBtn) backupBtn.style.display = 'flex'; // 显示备份管理按钮
+    } else { // 如果不是管理员模式
+        addRemoveControls.style.display = 'none'; // 隐藏管理员操作区域
+        // ⭐ 重点修改：在非管理员模式下隐藏导出和导入按钮
+        if (exportBtn) exportBtn.style.display = 'none';
+        if (importBtn) importBtn.style.display = 'none';
+        if (backupBtn) backupBtn.style.display = 'none'; // 隐藏备份管理按钮
     }
+
+    // 同时更新登录和设置按钮状态（这部分是您代码中已有的）
+    updateLoginButton();
+
+    logAction('更新UI状态', { isAdmin, isLoggedIn });
+}
 
     // 登录状态显示（加载所有链接）
     function showSecretGarden() {
@@ -2436,14 +2558,16 @@ const HTML_CONTENT = `
 
             if (isAdmin) {
                 const editBtn = document.createElement('button');
-                editBtn.textContent = '编辑名称';
+                editBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>';
+editBtn.title = '编辑名称';
                 editBtn.className = 'edit-category-btn';
                 editBtn.style.display = isEditCategoryMode ? 'inline-block' : 'none';
                 editBtn.onclick = () => editCategoryName(category);
                 titleContainer.appendChild(editBtn);
 
                 const deleteBtn = document.createElement('button');
-                deleteBtn.textContent = '删除分类';
+                deleteBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>';
+deleteBtn.title = '删除分类';
                 deleteBtn.className = 'delete-category-btn';
                 deleteBtn.style.display = isEditCategoryMode ? 'inline-block' : 'none';
                 deleteBtn.onclick = () => deleteCategory(category);
@@ -2515,6 +2639,9 @@ const HTML_CONTENT = `
     }
 
     // 创建卡片
+    // 请用这个新版本完整替换上面的旧函数
+    // 【第二步：替换这个函数】
+    // 请用下面的新版本，完整地替换掉旧的 createCard 函数
     function createCard(link, container) {
         const card = document.createElement('div');
         card.className = 'card';
@@ -2522,41 +2649,27 @@ const HTML_CONTENT = `
         card.dataset.isPrivate = link.isPrivate;
         card.setAttribute('data-url', link.url);
 
-        // 设置卡片动画延迟
         const cardIndex = container.children.length;
         card.style.setProperty('--card-index', cardIndex);
 
         const cardTop = document.createElement('div');
         cardTop.className = 'card-top';
 
-        // 定义默认的 SVG 图标
         const defaultIconSVG = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
-        '<path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>' +
-        '<path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>' +
-        '</svg>';
+            '<path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>' +
+            '<path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>' +
+            '</svg>';
 
-        // 创建图标元素
         const icon = document.createElement('img');
         icon.className = 'card-icon';
-
-        // 使用自定义图标或回退到favicon提取服务
-        icon.src = (
-            !link.icon ||
-            typeof link.icon !== 'string' ||
-            !link.icon.trim() ||
-            !isValidUrl(link.icon)
-        )
-            ? 'https://www.faviconextractor.com/favicon/' + extractDomain(link.url)
-            : link.icon;
-
+        icon.src = (!link.icon || typeof link.icon !== 'string' || !link.icon.trim() || !isValidUrl(link.icon)) ?
+            'https://www.faviconextractor.com/favicon/' + extractDomain(link.url) :
+            link.icon;
         icon.alt = 'Website Icon';
-
-        // 如果图片加载失败，使用默认的 SVG 图标
         icon.onerror = function() {
-            const svgBlob = new Blob([defaultIconSVG], {type: 'image/svg+xml'});
+            const svgBlob = new Blob([defaultIconSVG], { type: 'image/svg+xml' });
             const svgUrl = URL.createObjectURL(svgBlob);
             this.src = svgUrl;
-
             this.onload = () => URL.revokeObjectURL(svgUrl);
         };
 
@@ -2581,52 +2694,55 @@ const HTML_CONTENT = `
             card.appendChild(privateTag);
         }
 
-        const correctedUrl = link.url.startsWith('http://') || link.url.startsWith('https://') ? link.url : 'http://' + link.url;
+        // --- 这是本次修改的核心部分 ---
+        // 1. 创建覆盖层容器和左右两个点击区域
+        const overlay = document.createElement('div');
+        overlay.className = 'card-click-overlay';
 
-        if (!isAdmin) {
-            card.addEventListener('click', () => {
+        const editZone = document.createElement('div');
+        editZone.className = 'card-edit-zone';
+        editZone.title = '编辑'; // 添加悬浮提示
+
+        const deleteZone = document.createElement('div');
+        deleteZone.className = 'card-delete-zone';
+        deleteZone.title = '删除'; // 添加悬浮提示
+
+        // 2. 为编辑区域添加点击事件
+        editZone.addEventListener('click', (event) => {
+            event.stopPropagation(); // 阻止事件冒泡到卡片本身
+            if (isAdmin) {
+                showEditDialog(link);
+            }
+        });
+
+        // 3. 为删除区域添加点击事件
+        deleteZone.addEventListener('click', (event) => {
+            event.stopPropagation(); // 阻止事件冒泡
+            if (isAdmin) {
+                // 从事件目标找到父级的.card元素，然后传递给删除函数
+                const cardElement = event.target.closest('.card');
+                if (cardElement) {
+                    removeCard(cardElement);
+                }
+            }
+        });
+
+        // 4. 将左右区域添加到覆盖层，再将覆盖层添加到卡片中
+        overlay.appendChild(editZone);
+        overlay.appendChild(deleteZone);
+        card.appendChild(overlay);
+
+        // 为卡片本身添加点击事件，用于非管理模式下打开链接
+        const correctedUrl = link.url.startsWith('http://') || link.url.startsWith('https://') ? link.url : 'http://' + link.url;
+        card.addEventListener('click', () => {
+            // 在非管理模式下，覆盖层是隐藏的，这个事件才会触发
+            if (!isAdmin) {
                 window.open(correctedUrl, '_blank');
                 logAction('打开链接', { name: link.name, url: correctedUrl });
-            });
-        }
+            }
+        });
 
-        // 创建按钮容器
-        const cardActions = document.createElement('div');
-        cardActions.className = 'card-actions';
-
-        // 编辑按钮
-        const editBtn = document.createElement('button');
-        editBtn.className = 'card-btn edit-btn';
-        editBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
-            '<path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>' +
-            '<path d="m18.5 2.5 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>' +
-            '</svg>';
-        editBtn.title = '编辑';
-        editBtn.onclick = function (event) {
-            event.stopPropagation();
-            showEditDialog(link);
-        };
-
-        // 删除按钮
-        const deleteBtn = document.createElement('button');
-        deleteBtn.className = 'card-btn delete-btn';
-        deleteBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
-            '<polyline points="3,6 5,6 21,6"></polyline>' +
-            '<path d="m19,6v14a2,2 0 0,1 -2,2H7a2,2 0 0,1 -2,-2V6m3,0V4a2,2 0 0,1 2,-2h4a2,2 0 0,1 2,2v2"></path>' +
-            '<line x1="10" y1="11" x2="10" y2="17"></line>' +
-            '<line x1="14" y1="11" x2="14" y2="17"></line>' +
-            '</svg>';
-        deleteBtn.title = '删除';
-        deleteBtn.onclick = function (event) {
-            event.stopPropagation();
-            removeCard(card);
-        };
-
-        cardActions.appendChild(editBtn);
-        cardActions.appendChild(deleteBtn);
-        card.appendChild(cardActions);
-
-        // 添加鼠标悬停事件处理描述提示
+        // 保留原有的提示和拖拽功能
         card.addEventListener('mousemove', (e) => handleTooltipMouseMove(e, link.tips, isAdmin));
         card.addEventListener('mouseleave', handleTooltipMouseLeave);
 
@@ -2634,17 +2750,11 @@ const HTML_CONTENT = `
         card.addEventListener('dragover', dragOver);
         card.addEventListener('dragend', dragEnd);
         card.addEventListener('drop', drop);
-        card.addEventListener('touchstart', touchStart, { passive: false });
 
-        if (isAdmin && removeMode) {
-            editBtn.style.display = 'flex';
-            deleteBtn.style.display = 'flex';
-        }
-
+        // 根据当前状态决定是否将卡片添加到容器中
         if (isAdmin || (link.isPrivate && isLoggedIn) || !link.isPrivate) {
             container.appendChild(card);
         }
-
     }
 
 
@@ -2804,75 +2914,6 @@ const HTML_CONTENT = `
     // 拖拽卡片
     let draggedCard = null;
     let touchStartX, touchStartY;
-
-    // 触屏端拖拽卡片
-    function touchStart(event) {
-        if (!isAdmin) {
-            return;
-        }
-        draggedCard = event.target.closest('.card');
-        if (!draggedCard) return;
-
-        event.preventDefault();
-        const touch = event.touches[0];
-        touchStartX = touch.clientX;
-        touchStartY = touch.clientY;
-
-        draggedCard.classList.add('dragging');
-
-        document.addEventListener('touchmove', touchMove, { passive: false });
-        document.addEventListener('touchend', touchEnd);
-
-    }
-
-    function touchMove(event) {
-        if (!draggedCard) return;
-        event.preventDefault();
-
-        const touch = event.touches[0];
-        const currentX = touch.clientX;
-        const currentY = touch.clientY;
-
-        const deltaX = currentX - touchStartX;
-        const deltaY = currentY - touchStartY;
-        draggedCard.style.transform = "translate(" + deltaX + "px, " + deltaY + "px)";
-
-        const target = findCardUnderTouch(currentX, currentY);
-        if (target && target !== draggedCard) {
-            const container = target.parentElement;
-            const targetRect = target.getBoundingClientRect();
-
-            if (currentX < targetRect.left + targetRect.width / 2) {
-                container.insertBefore(draggedCard, target);
-            } else {
-                container.insertBefore(draggedCard, target.nextSibling);
-            }
-        }
-    }
-
-    function touchEnd(event) {
-        if (!draggedCard) return;
-
-        const card = draggedCard;
-        const targetCategory = card.closest('.card-container').id;
-
-        // 🔧 优化：删除冗余验证，拖拽只在管理员模式下可用，saveCardOrder()内部已有验证
-        if (isAdmin && card) {
-            updateCardCategory(card, targetCategory);
-            saveCardOrder().catch(error => {
-                console.error('Save failed:', error);
-            });
-        }
-        cleanupDragState();
-    }
-
-    function findCardUnderTouch(x, y) {
-        const cards = document.querySelectorAll('.card:not(.dragging)');
-        return Array.from(cards).find(card => {
-            const rect = card.getBoundingClientRect();
-            return x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom;
-        });
-    }
 
     // PC端拖拽卡片
     function dragStart(event) {
@@ -3143,12 +3184,6 @@ const HTML_CONTENT = `
         }
     }
 
-    // 打开GitHub仓库
-    function openGitHub() {
-        window.open('https://github.com/hmhm2022/Card-Tab', '_blank');
-        logAction('访问GitHub仓库');
-    }
-
     // 切换书签搜索下拉框
     function toggleBookmarkSearch() {
         const dropdown = document.getElementById('bookmark-search-dropdown');
@@ -3178,20 +3213,49 @@ const HTML_CONTENT = `
             performLogin();
         }
     });
+    async function restoreAndExit() {
+        showLoading('正在撤销修改...');
+        try {
+            const response = await fetch('/api/restoreData', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': localStorage.getItem('authToken')
+                },
+                body: JSON.stringify({ userId: 'testUser' })
+            });
 
-    // 切换设置状态
-    async function toggleAdminMode() {
-        const addRemoveControls = document.querySelector('.add-remove-controls');
-
-        if (!isAdmin && isLoggedIn) {
-            if (!await validateToken()) {
-                return;
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || '恢复失败');
             }
 
-            // 显示加载状态
-            showLoading('正在进入设置模式...');
+            // 恢复成功后，重置状态并退出设置模式
+            isAdmin = false;
+            removeMode = false;
+            isRemoveCategoryMode = false;
+            isEditCategoryMode = false;
+            document.body.classList.remove('admin-mode');
 
-            // 在进入设置模式之前进行备份
+            await reloadCardsAsAdmin(); // 重新加载已恢复的数据
+            updateLoginButton();
+            updateUIState();
+            hideLoading();
+            await customAlert('修改已撤销', '操作完成');
+            logAction('离开设置（已从备份恢复）');
+
+        } catch (error) {
+            hideLoading();
+            await customAlert('恢复数据失败: ' + error.message, '错误');
+        }
+    }
+    // 切换设置状态
+    async function toggleAdminMode() {
+        if (!isAdmin && isLoggedIn) {
+            // --- 进入设置模式的逻辑 (会先进行一次云端备份) ---
+            if (!await validateToken()) return;
+
+            showLoading('正在进入设置模式...');
             try {
                 const response = await fetch('/api/backupData', {
                     method: 'POST',
@@ -3199,62 +3263,54 @@ const HTML_CONTENT = `
                         'Content-Type': 'application/json',
                         'Authorization': localStorage.getItem('authToken')
                     },
-                    body: JSON.stringify({
-                        sourceUserId: 'testUser',
-                        backupUserId: 'backup'
-                    }),
+                    body: JSON.stringify({ sourceUserId: 'testUser' })
                 });
                 const result = await response.json();
-                if (result.success) {
-                    logAction('数据备份成功');
-                } else {
-                    throw new Error('备份失败');
-                }
+                if (!result.success) throw new Error('备份失败');
+                logAction('进入设置前的自动备份成功');
             } catch (error) {
-                // 🔧 安全修复：避免泄露详细错误信息
-                logAction('数据备份失败', { error: 'Backup operation failed' });
                 hideLoading();
-                const confirmed = await customConfirm('备份失败，是否仍要继续进入设置模式？', '是', '否');
-                if (!confirmed) {
-                    return;
-                }
-                showLoading('正在进入设置模式...');
+                const confirmed = await customConfirm('数据备份到服务器失败，是否仍要继续？', '是', '否');
+                if (!confirmed) return;
             }
 
-            try {
-                isAdmin = true;
-                addRemoveControls.style.display = 'flex';
-                await reloadCardsAsAdmin();
-                logAction('进入设置');
-                hideLoading();
-                await customAlert('准备设置分类和书签', '设置模式');
-            } finally {
-                hideLoading();
-            }
-        } else if (isAdmin) {
-            isAdmin = false;
-            removeMode = false;
-            isRemoveCategoryMode = false;
-            isEditCategoryMode = false;
-
-            // 重置分类管理按钮状态
-            const manageButton = document.querySelector('.category-manage-btn');
-            if (manageButton) {
-                manageButton.classList.remove('active');
-            }
-
-            addRemoveControls.style.display = 'none';
+            isAdmin = true;
+            document.body.classList.add('admin-mode');
             await reloadCardsAsAdmin();
-            logAction('离开设置');
-            await customAlert('设置已保存', '设置完成');
+            updateLoginButton();
+            updateUIState();
+            isEditCategoryMode = true;
+            toggleEditCategory();
+            toggleEditCategory();
+
+            hideLoading();
+            // await customAlert('已进入设置模式', '提示');
+            logAction('进入设置');
+
+        } else if (isAdmin) {
+            // --- 离开设置模式的逻辑 (全新) ---
+            const confirmed = await customConfirm('是否要保存您在设置模式中所做的修改？', '保存', '不保存');
+
+            if (confirmed) {
+                // 用户选择“保存”，直接退出即可 (修改已在过程中自动保存)
+                isAdmin = false;
+                removeMode = false;
+                isRemoveCategoryMode = false;
+                isEditCategoryMode = false;
+                document.body.classList.remove('admin-mode');
+
+                await reloadCardsAsAdmin(); // 重新加载以显示干净的最终状态
+                updateLoginButton();
+                updateUIState();
+
+                await customAlert('设置已保存', '操作完成');
+                logAction('离开设置（已保存）');
+            } else {
+                // 用户选择“不保存”，调用恢复函数
+                await restoreAndExit();
+            }
         }
-
-        updateLoginButton();
-        updateUIState();
     }
-
-
-
     // 应用暗色主题
     function applyDarkTheme() {
         document.body.classList.add('dark-theme');
@@ -3482,11 +3538,13 @@ const HTML_CONTENT = `
     function toggleTheme() {
         isDarkTheme = !isDarkTheme;
 
-        // 添加或移除暗色主题类
+        // 添加或移除暗色主题类并保存选择
         if (isDarkTheme) {
             document.body.classList.add('dark-theme');
+            localStorage.setItem('theme', 'dark'); // 保存为暗色主题
         } else {
             document.body.classList.remove('dark-theme');
+            localStorage.setItem('theme', 'light'); // 保存为亮色主题
         }
 
         logAction('切换主题', { isDarkTheme });
@@ -3962,6 +4020,224 @@ const HTML_CONTENT = `
         mask.style.display = 'none';
     }
 
+// ==== 导出书签 ====
+function exportBookmarks() {
+    const dataStr = JSON.stringify(links, null, 2); // pretty print
+    const blob = new Blob([dataStr], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+
+    a.download = 'bookmarks-' + new Date().toISOString().slice(0,10) + '.json';
+
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    logAction("导出书签", { count: links.length });
+}
+
+// ==== 导入书签 ====
+function importBookmarks(file) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            const importedLinks = JSON.parse(e.target.result);
+            if (!Array.isArray(importedLinks)) throw new Error("格式错误");
+
+            importedLinks.forEach(link => {
+                // 如果分类不存在，先创建
+                if (!categories[link.category]) {
+                    categories[link.category] = [];
+                }
+                // 添加或覆盖
+                const idx = links.findIndex(l => l.url === link.url);
+                if (idx >= 0) {
+                    links[idx] = link; // 覆盖
+                } else {
+                    links.push(link);
+                }
+            });
+
+            updateCategorySelect();
+            renderSections();
+            renderCategoryButtons();
+            saveLinks();
+            logAction("导入书签", { count: importedLinks.length });
+            alert("导入完成，共 " + importedLinks.length + " 条书签");
+        } catch (err) {
+            alert("导入失败：" + err.message);
+        }
+    };
+    reader.readAsText(file);
+}
+
+function handleImportClick() {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = ".json";
+    input.onchange = e => {
+        const file = e.target.files[0];
+        if (file) {
+            importBookmarks(file);
+        }
+    };
+    input.click();
+}
+
+// --- VVVVVV 新增备份管理功能函数 VVVVVV ---
+async function showBackupManager() {
+    if (!await validateToken()) return;
+    document.getElementById('backup-modal-overlay').style.display = 'flex';
+    const listContainer = document.getElementById('backup-list-container');
+    listContainer.innerHTML = '<div style="text-align:center; padding: 20px; color: #888;">加载中...</div>';
+
+    try {
+        const response = await fetch('/api/listBackups', {
+            headers: { 'Authorization': localStorage.getItem('authToken') }
+        });
+        if (!response.ok) throw new Error('获取备份列表失败');
+        const backupKeys = await response.json();
+        renderBackupList(backupKeys);
+    } catch (error) {
+        listContainer.innerHTML = '<div style="text-align:center; padding: 20px; color: #e74c3c;">' + error.message + '</div>';
+    }
+}
+
+function hideBackupManager() {
+    document.getElementById('backup-modal-overlay').style.display = 'none';
+}
+
+function renderBackupList(keys) {
+    const listContainer = document.getElementById('backup-list-container');
+    const lastBackupTimeEl = document.getElementById('last-backup-time');
+    listContainer.innerHTML = '';
+
+    if (keys.length === 0) {
+        listContainer.innerHTML = '<div style="text-align:center; padding: 20px; color: #888;">暂无备份记录</div>';
+        lastBackupTimeEl.textContent = '上次备份时间: 暂无';
+        return;
+    }
+
+    // 按时间降序排序
+    keys.sort((a, b) => b.localeCompare(a));
+    
+    lastBackupTimeEl.textContent = '上次备份时间: ' + formatBackupKey(keys[0]);
+
+    keys.forEach(key => {
+        const item = document.createElement('div');
+        item.className = 'backup-list-item';
+
+        const timestamp = document.createElement('span');
+        timestamp.className = 'timestamp';
+        timestamp.textContent = formatBackupKey(key);
+
+        const actions = document.createElement('div');
+        actions.className = 'actions';
+
+        const restoreLink = document.createElement('a');
+        restoreLink.textContent = '从此节点恢复';
+        restoreLink.onclick = () => handleRestoreFromBackup(key);
+
+        const deleteLink = document.createElement('a');
+        deleteLink.className = 'delete-backup-btn';
+        deleteLink.innerHTML = '&#128465;'; // Trash can emoji
+        deleteLink.title = '删除此备份';
+        deleteLink.onclick = () => handleDeleteBackup(key);
+        
+        actions.appendChild(restoreLink);
+        actions.appendChild(deleteLink);
+        item.appendChild(timestamp);
+        item.appendChild(actions);
+        listContainer.appendChild(item);
+    });
+}
+
+function formatBackupKey(key) {
+    return key.replace('backup_', '').replace('_', ' ');
+}
+
+async function handleManualBackup() {
+    const confirmed = await customConfirm('确定要立即创建一个新的备份吗？', '确定', '取消');
+    if (!confirmed) return;
+
+    showLoading('正在创建备份...');
+    try {
+        const response = await fetch('/api/backupData', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': localStorage.getItem('authToken')
+            },
+            body: JSON.stringify({ sourceUserId: 'testUser' })
+        });
+        const result = await response.json();
+        if (!result.success) throw new Error(result.message || '备份失败');
+        
+        hideLoading();
+        await customAlert('备份创建成功！', '成功');
+        await showBackupManager(); // 刷新列表
+    } catch (error) {
+        hideLoading();
+        await customAlert('备份失败: ' + error.message, '错误');
+    }
+}
+
+async function handleRestoreFromBackup(backupId) {
+    const message = '确定要从备份点 "' + formatBackupKey(backupId) + '" 恢复吗？\\n\\n注意：当前所有数据都将被此备份覆盖，此操作不可逆！';
+    const confirmed = await customConfirm(message, '确定恢复', '取消');
+    if (!confirmed) return;
+
+    showLoading('正在恢复数据...');
+    try {
+        const response = await fetch('/api/restoreFromBackup', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': localStorage.getItem('authToken')
+            },
+            body: JSON.stringify({ userId: 'testUser', backupId: backupId })
+        });
+        const result = await response.json();
+        if (!result.success) throw new Error(result.message || '恢复失败');
+
+        hideLoading();
+        hideBackupManager();
+        await customAlert('数据恢复成功！页面将重新加载。', '成功');
+        await loadLinks(); // 重新加载主页数据
+    } catch (error) {
+        hideLoading();
+        await customAlert('恢复失败: ' + error.message, '错误');
+    }
+}
+
+async function handleDeleteBackup(backupId) {
+    const confirmed = await customConfirm('确定要永久删除备份 "' + formatBackupKey(backupId) + '" 吗？', '确定删除', '取消');
+    if (!confirmed) return;
+
+    showLoading('正在删除...');
+    try {
+         const response = await fetch('/api/deleteBackup', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': localStorage.getItem('authToken')
+            },
+            body: JSON.stringify({ backupId: backupId })
+        });
+        const result = await response.json();
+        if (!result.success) throw new Error(result.message || '删除失败');
+        
+        hideLoading();
+        await customAlert('备份已删除', '成功');
+        await showBackupManager(); // 刷新列表
+    } catch (error) {
+        hideLoading();
+        await customAlert('删除失败: ' + error.message, '错误');
+    }
+}
+// --- ^^^^^^ 新增备份管理功能函数 ^^^^^^ ---
+
     </script>
 </body>
 
@@ -3993,7 +4269,7 @@ async function validateServerToken(authToken, env) {
         const tokenTimestamp = parseInt(timestamp);
         const now = Date.now();
 
-        const FIFTEEN_MINUTES = 15 * 60 * 1000;
+        const FIFTEEN_MINUTES = 30 * 24 * 60 * 60 * 1000;
         if (now - tokenTimestamp > FIFTEEN_MINUTES) {
             return {
                 isValid: false,
@@ -4093,7 +4369,9 @@ export default {
             const filteredLinks = parsedData.links.filter(link => !link.isPrivate);
             const filteredCategories = {};
             Object.keys(parsedData.categories).forEach(category => {
-                filteredCategories[category] = parsedData.categories[category].filter(link => !link.isPrivate);
+                if(parsedData.categories[category]) {
+                    filteredCategories[category] = parsedData.categories[category].filter(link => !link.isPrivate);
+                }
             });
 
             return new Response(JSON.stringify({
@@ -4180,7 +4458,6 @@ export default {
       }
 
       if (url.pathname === '/api/backupData' && request.method === 'POST') {
-        // 🔧 安全修复：添加管理员权限验证
         const authToken = request.headers.get('Authorization');
         const validation = await validateAdminToken(authToken, env);
 
@@ -4199,7 +4476,6 @@ export default {
               headers: { 'Content-Type': 'application/json' }
             });
         } catch (error) {
-            // 避免泄露详细错误信息
             return new Response(JSON.stringify({
                 success: false,
                 message: '备份操作失败'
@@ -4209,6 +4485,81 @@ export default {
             });
         }
       }
+      if (url.pathname === '/api/restoreData' && request.method === 'POST') {
+        const authToken = request.headers.get('Authorization');
+        const validation = await validateAdminToken(authToken, env);
+
+        if (!validation.isValid) {
+            return new Response(JSON.stringify(validation.response), {
+                status: validation.status,
+                headers: { 'Content-Type': 'application/json' }
+            });
+        }
+
+        try {
+            const { userId } = await request.json();
+            const result = await this.restoreData(env, userId);
+            return new Response(JSON.stringify(result), {
+                status: result.success ? 200 : 500,
+                headers: { 'Content-Type': 'application/json' }
+            });
+        } catch (error) {
+            return new Response(JSON.stringify({ success: false, message: '恢复操作失败' }), {
+                status: 500,
+                headers: { 'Content-Type': 'application/json' }
+            });
+        }
+      }
+      
+      // --- VVVVVV 新增后端 API 接口 VVVVVV ---
+      
+      // 1. 获取备份列表
+      if (url.pathname === '/api/listBackups' && request.method === 'GET') {
+          const authToken = request.headers.get('Authorization');
+          const validation = await validateAdminToken(authToken, env);
+          if (!validation.isValid) {
+              return new Response(JSON.stringify(validation.response), { status: validation.status, headers: { 'Content-Type': 'application/json' } });
+          }
+          const backups = await env.CARD_ORDER.list({ prefix: 'backup_' });
+          const backupKeys = backups.keys.map(key => key.name);
+          return new Response(JSON.stringify(backupKeys), { status: 200, headers: { 'Content-Type': 'application/json' } });
+      }
+
+      // 2. 从指定备份恢复
+      if (url.pathname === '/api/restoreFromBackup' && request.method === 'POST') {
+          const authToken = request.headers.get('Authorization');
+          const validation = await validateAdminToken(authToken, env);
+          if (!validation.isValid) {
+              return new Response(JSON.stringify(validation.response), { status: validation.status, headers: { 'Content-Type': 'application/json' } });
+          }
+          const { userId, backupId } = await request.json();
+          if (!userId || !backupId) {
+              return new Response(JSON.stringify({ success: false, message: '缺少参数' }), { status: 400 });
+          }
+          const backupData = await env.CARD_ORDER.get(backupId);
+          if (backupData) {
+              await env.CARD_ORDER.put(userId, backupData);
+              return new Response(JSON.stringify({ success: true, message: '已从 ' + backupId + ' 恢复' }), { status: 200 });
+          }
+          return new Response(JSON.stringify({ success: false, message: '备份文件不存在' }), { status: 404 });
+      }
+      
+      // 3. 删除指定备份
+      if (url.pathname === '/api/deleteBackup' && request.method === 'POST') {
+          const authToken = request.headers.get('Authorization');
+          const validation = await validateAdminToken(authToken, env);
+          if (!validation.isValid) {
+              return new Response(JSON.stringify(validation.response), { status: validation.status, headers: { 'Content-Type': 'application/json' } });
+          }
+          const { backupId } = await request.json();
+          if (!backupId) {
+              return new Response(JSON.stringify({ success: false, message: '缺少参数' }), { status: 400 });
+          }
+          await env.CARD_ORDER.delete(backupId);
+          return new Response(JSON.stringify({ success: true, message: backupId + ' 已删除' }), { status: 200 });
+      }
+
+      // --- ^^^^^^ 新增后端 API 接口 ^^^^^^ ---
 
       return new Response('Not Found', { status: 404 });
     },
@@ -4228,28 +4579,19 @@ export default {
                     minute: '2-digit',
                     second: '2-digit',
                     hour12: false
-                }).replace(/\//g, '-');
+                }).replace(/\//g, '-').replace(/:/g, '.');
 
                 const backupId = `backup_${currentDate}`;
 
                 const backups = await env.CARD_ORDER.list({ prefix: 'backup_' });
-                const backupKeys = backups.keys.map(key => key.name).sort((a, b) => {
-                    const timeA = new Date(a.split('_')[1].replace(/-/g, '/')).getTime();
-                    const timeB = new Date(b.split('_')[1].replace(/-/g, '/')).getTime();
-                    return timeB - timeA;  // 降序排序，最新的在前
-                });
+                const backupKeys = backups.keys.map(key => key.name);
 
                 await env.CARD_ORDER.put(backupId, sourceData);
 
-                const allBackups = [...backupKeys, backupId].sort((a, b) => {
-                    const timeA = new Date(a.split('_')[1].replace(/-/g, '/')).getTime();
-                    const timeB = new Date(b.split('_')[1].replace(/-/g, '/')).getTime();
-                    return timeB - timeA;
-                });
-
-                const backupsToDelete = allBackups.slice(MAX_BACKUPS);
-
-                if (backupsToDelete.length > 0) {
+                const allBackups = [...backupKeys, backupId].sort().reverse();
+                
+                if (allBackups.length > MAX_BACKUPS) {
+                    const backupsToDelete = allBackups.slice(MAX_BACKUPS);
                     await Promise.all(
                         backupsToDelete.map(key => env.CARD_ORDER.delete(key))
                     );
@@ -4257,18 +4599,31 @@ export default {
 
                 return {
                     success: true,
-                    backupId,
-                    remainingBackups: MAX_BACKUPS,
-                    deletedCount: backupsToDelete.length
+                    backupId
                 };
             } catch (error) {
                 return {
                     success: false,
-                    error: 'Backup operation failed',
+                    message: '备份操作失败',
                     details: error.message
                 };
             }
         }
-        return { success: false, error: 'Source data not found' };
-    }
+        return { success: false, message: '源数据未找到' };
+    },
+    async restoreData(env, targetUserId) {
+        const backups = await env.CARD_ORDER.list({ prefix: 'backup_' });
+        if (backups.keys.length === 0) {
+            return { success: false, message: '未找到任何备份' };
+        }
+        backups.keys.sort((a, b) => b.name.localeCompare(a.name));
+        const latestBackupKey = backups.keys[0].name;
+
+        const backupData = await env.CARD_ORDER.get(latestBackupKey);
+        if (backupData) {
+            await env.CARD_ORDER.put(targetUserId, backupData);
+            return { success: true, message: `已从备份 ${latestBackupKey} 恢复` };
+        }
+        return { success: false, message: `读取备份 ${latestBackupKey} 失败` };
+    },
   };
