@@ -2182,9 +2182,19 @@ const HTML_CONTENT = `
             return;
         }
 
-        // 1. 重命名分类对象
-        categories[newName] = categories[oldName];
-        delete categories[oldName];
+        // 1. 重命名分类对象，并保持原有顺序
+const newCategories = {};
+Object.keys(categories).forEach(key => {
+    if (key === oldName) {
+        newCategories[newName] = categories[oldName];
+    } else {
+        newCategories[key] = categories[key];
+    }
+});
+
+// 清空并用新顺序重新填充 categories 对象
+Object.keys(categories).forEach(key => delete categories[key]);
+Object.assign(categories, newCategories);
 
         // 2. 更新所有链接的 category 字段
         [...publicLinks, ...privateLinks].forEach(link => {
@@ -2472,6 +2482,9 @@ const HTML_CONTENT = `
             console.log('Received data:', data);
 
             if (data.categories) {
+                // 先清空当前的所有分类
+                Object.keys(categories).forEach(key => delete categories[key]);
+                // 然后再加载恢复的正确分类
                 Object.assign(categories, data.categories);
             }
 
@@ -4002,7 +4015,6 @@ deleteBtn.title = '删除分类';
             confirmBtn.onclick = handleConfirm;
             cancelBtn.onclick = handleCancel;
             document.addEventListener('keydown', handleKeyDown);
-            dialog.onclick = (e) => e.target === dialog && handleCancel();
         });
     }
 
